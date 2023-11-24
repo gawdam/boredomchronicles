@@ -1,22 +1,26 @@
-class userHistory {
-  final int id; // Primary key
-  final DateTime dateTime;
-  final int value;
+class UserHistory {
+  final String uid; // Primary key
+  final DateTime timestamp;
+  final double value;
 
-  userHistory({required this.id, required this.dateTime, required this.value});
+  UserHistory({
+    required this.uid,
+    required this.timestamp,
+    required this.value,
+  });
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'date': dateTime.toIso8601String(), // Store DateTime as a string
+      'uid': uid,
+      'timestamp': timestamp.toIso8601String(), // Store DateTime as a string
       'value': value,
     };
   }
 
-  factory userHistory.fromMap(Map<String, dynamic> map) {
-    return userHistory(
-      id: map['id'],
-      dateTime: DateTime.parse(map['date']),
+  factory UserHistory.fromMap(Map<String, dynamic> map) {
+    return UserHistory(
+      uid: map['id'],
+      timestamp: DateTime.parse(map['timestamp']),
       value: map['value'],
     );
   }

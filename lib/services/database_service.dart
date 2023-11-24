@@ -2,9 +2,9 @@ import 'package:boredomapp/models/user_history.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-class DatabaseHelper {
+class DatabaseService {
   static Database? _database;
-  static const String tableName = 'boredom_data';
+  static const String tableName = 'user_history';
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -13,35 +13,36 @@ class DatabaseHelper {
   }
 
   Future<Database> initDatabase() async {
-    final path = join(await getDatabasesPath(), 'boredom_data.db');
+    final path = join(await getDatabasesPath(), 'user_history.db');
     return openDatabase(path, version: 1, onCreate: (db, version) async {
       await db.execute('''
         CREATE TABLE $tableName(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          dateTime TEXT,
+          timestamp TEXT,
           value INTEGER
         )
       ''');
     });
   }
 
-  Future<int> insertBoredomData(userHistory data) async {
+  Future<int> insertBoredomData(UserHistory data) async {
     final db = await database;
     return db.insert(tableName, data.toMap());
   }
 
-  Future<List<userHistory>> getBoredomDataForDate(DateTime date) async {
+  Future<List<UserHistory>> getBoredomDataForDateAndHour(
+      DateTime date, int hour) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       tableName,
-      where: 'date = ?',
-      whereArgs: [_formatDate(date)],
+      where: 'timestamp LIKE ?',
+      whereArgs: ['${_formatDate(date)} $hour%'],
     );
 
     return List.generate(maps.length, (i) {
-      return userHistory(
-        id: maps[i]['id'],
-        dateTime: DateTime.parse(maps[i]['date']),
+      return UserHistory(
+        uid: maps[i]['id'],
+        timestamp: DateTime.parse(maps[i]['timestamp']),
         value: maps[i]['value'],
       );
     });

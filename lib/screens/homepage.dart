@@ -1,10 +1,13 @@
 import 'dart:async';
 
+import 'package:boredomapp/models/user_history.dart';
 import 'package:boredomapp/screens/sidedrawer.dart';
+import 'package:boredomapp/services/database_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
 
 import '../widgets/boredombutton.dart';
 import '../widgets/boredomgauge.dart';
@@ -58,9 +61,7 @@ class _HomePage extends State<HomePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       // Load boredom value from shared preferences
-      if (prefs.containsKey('boredomValue')) {
-        _boredomValue = prefs.getDouble('boredomValue') ?? 50;
-      } else {}
+      _boredomValue = prefs.getDouble('boredomValue') ?? 50;
     });
   }
   // Initial value

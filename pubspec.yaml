@@ -51,6 +51,7 @@ dependencies:
   google_fonts: ^6.1.0
   table_calendar: ^3.0.9
   sqflite: ^2.0.0
+  workmanager: ^0.5.2
 
   # intl: ^0.18.1
 
