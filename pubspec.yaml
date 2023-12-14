@@ -89,6 +89,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/man.png
+    - assets/images/woman.png
     - assets/images/sloth.png
     - assets/images/sloth.gif
     - assets/images/profile.png
@@ -96,6 +97,8 @@ flutter:
     - assets/themes/base_theme.json
     - assets/themes/base_theme_2.json
     - assets/themes/base_theme_3.json
+    - assets/images/sprite_0.png
+    - assets/images/sprite_1.png
 
 
   # 

@@ -1,12 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 class BoredomButton extends StatefulWidget {
-  final Function onPressed;
+  final Function(double) onPressed;
   final double boredomValue;
 
-  const BoredomButton({super.key, 
+  BoredomButton({
+    super.key,
     required this.boredomValue,
     required this.onPressed,
   });
@@ -17,43 +17,54 @@ class BoredomButton extends StatefulWidget {
 
 class _BoredomButtonState extends State<BoredomButton> {
   Timer? timer;
+  bool isPressed = false;
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () {
-          widget.onPressed(widget.boredomValue + 2);
-        },
-        onLongPressDown: (details) {
-          print('down');
-          timer = Timer.periodic(const Duration(milliseconds: 10), (t) {
-            setState(() {
-              widget.onPressed(widget.boredomValue + 0.2);
-            });
+      onTapDown: (details) {
+        setState(() {
+          isPressed = true;
+        });
+        widget.onPressed(widget.boredomValue + 2);
+      },
+      onTapUp: (details) {
+        setState(() {
+          isPressed = false;
+        });
+      },
+      onLongPressDown: (details) {
+        timer = Timer.periodic(const Duration(milliseconds: 10), (t) {
+          setState(() {
+            isPressed = true;
+            widget.onPressed(widget.boredomValue + 0.2);
           });
-        },
-        onLongPressUp: () {
-          print('up');
-          timer?.cancel();
-        },
-        onLongPressCancel: () {
-          print('cancel');
-          timer?.cancel();
-        },
-        child: Container(
-          width: 100, // Adjust the width as needed
-          height: 100, // Adjust the height as needed
-          decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: const Border(),
-              color: Theme.of(context).colorScheme.primaryContainer),
-          child: Center(
-            child: Text(
-              'I\'m Bored!',
-              style: TextStyle(
-                  fontSize: 15,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer),
-            ),
-          ),
-        ));
+        });
+      },
+      onLongPressUp: () {
+        setState(() {
+          isPressed = false;
+        });
+        timer?.cancel();
+      },
+      onLongPressCancel: () {
+        setState(() {
+          isPressed = false;
+        });
+        print('cancel');
+        timer?.cancel();
+      },
+      child: Image.asset(
+        isPressed ? 'assets/images/sprite_1.png' : 'assets/images/sprite_0.png',
+        width: 150, // Adjust the width as needed
+        height: 150, // Adjust the height as needed
+      ),
+    );
   }
 }

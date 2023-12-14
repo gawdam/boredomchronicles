@@ -74,13 +74,13 @@ void main() async {
   final theme = ThemeDecoder.decodeThemeData(themeJson)!;
 
   runApp(ProviderScope(
-      child: App(
+      child: MyApp(
     theme: theme,
   )));
 }
 
-class App extends StatelessWidget {
-  const App({super.key, required this.theme});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key, required this.theme});
   final ThemeData theme;
 
   @override

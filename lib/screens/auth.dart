@@ -1,13 +1,7 @@
-import 'dart:io';
-
-import 'package:boredomapp/services/auth_service.dart';
-import 'package:boredomapp/widgets/user_image_picker.dart';
+import 'package:boredomapp/models/funny_words.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-
-import '../services/google_sign_in.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -22,224 +16,204 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreen extends State<AuthScreen> {
   final _form = GlobalKey<FormState>();
-  final _authService = AuthService();
-
-  var _isLogin = true;
-  var _enteredEmail = '';
-  var _enteredPassword = '';
-  File? _selectedImage;
-  var _isAuthenticating = false;
-  var _enteredUsername = '';
+  final _usernameController = TextEditingController();
+  bool _isUsernameAvailable = true;
+  bool _isLoggingIn = false;
+  static double initialBoredomValue = 50.0;
 
   void _submit() async {
-    final isValid = _form.currentState!.validate();
-    if (!isValid) {
-      return;
-    }
-
-    if (!_isLogin && _selectedImage == null) {
-      _selectedImage = (File('assets/images/profile.png'));
-    }
-
-    _form.currentState!.save();
-
-    try {
-      setState(() {
-        _isAuthenticating = true;
-      });
-
-      if (_isLogin) {
-        await _authService.login(_enteredEmail, _enteredPassword);
-      } else {
-        await _authService.signup(
-          _enteredEmail,
-          _enteredPassword,
-          _enteredUsername,
-          _selectedImage,
+    if (_form.currentState?.validate() ?? false) {
+      try {
+        setState(() {
+          _isLoggingIn = true; // Set to true when starting login
+        });
+        final userCredentials = await _firebase.createUserWithEmailAndPassword(
+          email: "${_usernameController.text}@boredomapp.com",
+          password: '12345678',
         );
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredentials.user?.uid)
+            .set({
+          'username': _usernameController.text,
+          'boredomValue': initialBoredomValue,
+        });
+      } on FirebaseAuthException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${e.message}'),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+          ),
+        );
+      } finally {
+        setState(() {
+          _isLoggingIn = false; // Set to false after login attempt
+        });
       }
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      String errorMessage = 'Authentication failed.';
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(errorMessage)));
-
-      setState(() {
-        _isAuthenticating = false;
-      });
     }
+  }
+
+  Future<void> checkUsernameAvailability(String username) async {
+    try {
+      // Check if the username already exists in Firestore
+      final result = await FirebaseFirestore.instance
+          .collection('users')
+          .where('username', isEqualTo: username)
+          .get();
+      print('here2');
+      if (result.docs.isNotEmpty) {
+        setState(() {
+          _isUsernameAvailable = false;
+        });
+      } else {
+        setState(() {
+          _isUsernameAvailable = true;
+        });
+      }
+    } catch (e) {
+      print('Error checking username availability: $e');
+    }
+  }
+
+  Future<String> generateUniqueUsername() async {
+    String username = FunnyWords.getRandomCombination();
+    while (!_isUsernameAvailable) {
+      // If the username is not available, generate a new one
+      username = FunnyWords.getRandomCombination();
+      await checkUsernameAvailability(username);
+    }
+
+    return username;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(
-                  top: 30,
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                ),
-                width: 300,
-                child: Image.asset('assets/images/sloth.gif'),
-              ),
-              Card(
-                margin: const EdgeInsets.all(30),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Form(
-                        key: _form,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (!_isLogin)
-                              UserImagePicker(
-                                onPickImage: (pickedImage) {
-                                  _selectedImage = pickedImage;
-                                },
-                              ),
-                            if (!_isLogin)
-                              TextFormField(
-                                decoration: const InputDecoration(
-                                    labelText: 'Username'),
-                                enableSuggestions: false,
-                                validator: (value) {
-                                  if (value == null ||
-                                      value.isEmpty ||
-                                      value.trim().length < 4) {
-                                    return 'Please enter at least 4 characters';
-                                  }
-                                  return null;
-                                },
-                                onSaved: (newValue) {
-                                  _enteredUsername = newValue!;
-                                },
-                              ),
-                            TextFormField(
-                              decoration: const InputDecoration(
-                                  labelText: "Email Address"),
-                              keyboardType: TextInputType.emailAddress,
-                              autocorrect: false,
-                              textCapitalization: TextCapitalization.none,
-                              validator: (value) {
-                                if (value == null ||
-                                    value.trim().isEmpty ||
-                                    !value.contains('@')) {
-                                  return '';
-                                }
-                                return null;
-                              },
-                              onSaved: (value) {
-                                _enteredEmail = value!;
-                              },
-                            ),
-                            TextFormField(
-                              decoration:
-                                  const InputDecoration(labelText: "Password"),
-                              obscureText: true,
-                              validator: (value) {
-                                if (value == null || value.trim().length < 6) {
-                                  return 'Password must be atleast 6 characters long';
-                                }
-                                return null;
-                              },
-                              onSaved: (value) {
-                                _enteredPassword = value!;
-                              },
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            if (_isAuthenticating)
-                              const CircularProgressIndicator(),
-                            if (!_isAuthenticating)
-                              ElevatedButton(
-                                onPressed: _submit,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer,
-                                ),
-                                child: Text(_isLogin ? 'Login' : 'Signup'),
-                              ),
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _isLogin = !_isLogin;
-                                });
-                              },
-                              child: Text(_isLogin
-                                  ? 'Create an account'
-                                  : 'I already have an account'),
-                            ),
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Divider(
-                                    thickness: 0.5,
-                                    color: Colors.grey[400],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10.0),
-                                  child: Text(
-                                    'or',
-                                    style: TextStyle(color: Colors.grey[700]),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Divider(
-                                    thickness: 0.5,
-                                    color: Colors.grey[400],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 15),
-                            if (_isAuthenticating)
-                              const CircularProgressIndicator(),
-                            if (!_isAuthenticating)
-                              ElevatedButton(
-                                onPressed: signInWithGoogle,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Image.asset(
-                                        'assets/images/google.png', // Replace with your Google logo asset
-                                        height: 24.0,
-                                      ),
-                                      SizedBox(width: 12.0),
-                                      Text(
-                                        'Sign in with Google',
-                                        style: TextStyle(color: Colors.black),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                          ],
-                        )),
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Form(
+              key: _form,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(
+                      top: 30,
+                      bottom: 20,
+                    ),
+                    width: 300,
+                    child: Image.asset('assets/images/sloth.gif'),
                   ),
-                ),
+                  Text(
+                    "Begin your boredom chronicles!",
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(
+                    height: 40,
+                  ),
+                  Text(
+                    "Let's get you a funky username!",
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 16.0),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black
+                          .withOpacity(0.6), // Dark semi-transparent color
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),
+                    child: Stack(
+                      children: [
+                        TextFormField(
+                          controller: _usernameController,
+                          decoration: InputDecoration(
+                            labelText: 'Username',
+                            labelStyle: TextStyle(color: Colors.white),
+                            errorText: !_isUsernameAvailable
+                                ? 'Oops! Username already taken!'
+                                : null,
+                          ),
+                          onChanged: (value) async {
+                            setState(() {
+                              _usernameController.text = value;
+                            });
+                            await checkUsernameAvailability(value);
+                          },
+                          validator: (value) {
+                            if (value == null ||
+                                value.isEmpty ||
+                                value.trim().length < 4) {
+                              return 'Please enter at least 4 characters';
+                            }
+
+                            // Check if the username contains only letters and numbers
+                            if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value)) {
+                              return 'Username can only contain letters and numbers';
+                            }
+
+                            return null;
+                          },
+                        ),
+                        Positioned(
+                          right: 8.0,
+                          top: 12.0,
+                          child: GestureDetector(
+                            onTap: () async {
+                              String newUsername =
+                                  await generateUniqueUsername();
+                              setState(() {
+                                _usernameController.text = newUsername;
+                              });
+                            },
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              padding: EdgeInsets.all(1.0),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primaryContainer,
+                                borderRadius: BorderRadius.circular(5.0),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.generating_tokens_outlined,
+                                  color:
+                                      Theme.of(context).colorScheme.onSecondary,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16.0),
+                  if (!_isLoggingIn)
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        _submit();
+                      },
+                      icon: Icon(Icons.arrow_forward),
+                      label: Text('Begin your journey'),
+                    ),
+                  if (_isLoggingIn) CircularProgressIndicator(),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
