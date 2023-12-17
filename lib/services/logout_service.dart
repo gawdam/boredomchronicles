@@ -8,10 +8,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:json_theme/json_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LogoutService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  Future<void> clearPreferences() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.clear();
+  }
 
   Future<void> logout(BuildContext context, UserData data) async {
     try {
@@ -24,6 +29,9 @@ class LogoutService {
           password: '12345678',
         ),
       );
+
+      await clearPreferences();
+
       await _firestore.collection('users').doc(data.uid).delete();
 
       // 1. Delete user account

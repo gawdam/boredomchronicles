@@ -37,6 +37,7 @@ class _AuthScreen extends State<AuthScreen> {
             .set({
           'username': _usernameController.text,
           'boredomValue': initialBoredomValue,
+          'avatar': 'man.png',
         });
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(

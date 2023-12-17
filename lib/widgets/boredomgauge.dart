@@ -1,16 +1,34 @@
+import 'package:boredomapp/models/user.dart';
+import 'package:boredomapp/providers/userprovider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BoredomGauge extends StatefulWidget {
+class BoredomGauge extends ConsumerStatefulWidget {
   final double value; // Value to be represented on the gauge
   final ValueChanged<double> onValueChanged;
-  const BoredomGauge({super.key, required this.value, required this.onValueChanged});
+  const BoredomGauge(
+      {super.key, required this.value, required this.onValueChanged});
 
   @override
-  State<BoredomGauge> createState() => _BoredomGaugeState();
+  ConsumerState<BoredomGauge> createState() => _BoredomGaugeState();
 }
 
-class _BoredomGaugeState extends State<BoredomGauge> {
+class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
+  String _getAvatar() {
+    final user = ref.watch(userProvider);
+    final avatarFile = user.when(
+      loading: () => 'assets/images/man.png',
+      error: (e, _) => 'assets/images/man.png',
+      data: (data) => data != null
+          ? 'assets/images/${data.avatar}'
+          : 'assets/images/man.png',
+    );
+    return avatarFile;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ClipRect(
@@ -129,7 +147,7 @@ class _BoredomGaugeState extends State<BoredomGauge> {
                           255, 110, 110, 110), // Color of the marker pointer
                       markerOffset: 3, // Offset to position the marker pointer
                       markerType: MarkerType.image,
-                      imageUrl: 'assets/images/man.png',
+                      imageUrl: _getAvatar() ?? 'assets/images/man.png',
 
                       markerWidth: 60,
                       markerHeight: 60,

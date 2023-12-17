@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 
 class AvatarSelectionScreen extends StatefulWidget {
   final String initialSelection;
+  final Function(String) onAvatarSelected;
 
-  const AvatarSelectionScreen({Key? key, required this.initialSelection})
-      : super(key: key);
+  const AvatarSelectionScreen({
+    Key? key,
+    required this.initialSelection,
+    required this.onAvatarSelected,
+  }) : super(key: key);
 
   @override
   _AvatarSelectionScreenState createState() => _AvatarSelectionScreenState();
@@ -44,6 +48,9 @@ class _AvatarSelectionScreenState extends State<AvatarSelectionScreen> {
         setState(() {
           selectedAvatar = avatarImage;
         });
+
+        // Call the callback function to update the 'avatar' variable
+        widget.onAvatarSelected(avatarImage);
       },
       child: Container(
         width: 120,

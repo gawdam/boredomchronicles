@@ -43,7 +43,7 @@ dependencies:
   google_sign_in: ^6.1.5
   cloud_firestore: ^4.11.0
   firebase_storage: ^11.3.1
-  image_picker: ^1.0.4
+  image_picker: ^1.0.5
   # firebase_ui_auth: ^1.9.1
   flutter_riverpod: ^2.4.4
   jpeg_encode: ^1.0.1
@@ -52,6 +52,8 @@ dependencies:
   table_calendar: ^3.0.9
   sqflite: ^2.0.0
   workmanager: ^0.5.2
+  path_provider: ^2.1.1
+  path: ^1.8.3
 
   # intl: ^0.18.1
 

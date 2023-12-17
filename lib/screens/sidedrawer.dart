@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/screens/auth.dart';
@@ -6,6 +7,7 @@ import 'package:boredomapp/screens/avatar.dart';
 import 'package:boredomapp/screens/splash.dart';
 import 'package:boredomapp/screens/userprofile.dart';
 import 'package:boredomapp/services/logout_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,21 +26,24 @@ class SideDrawer extends ConsumerStatefulWidget {
 class _SideDrawerState extends ConsumerState<SideDrawer> {
   final LogoutService _logoutService = LogoutService();
 
-  late UserData user;
+  late UserData userData;
 
   Widget getUserData() {
-    final user = ref.watch(userProvider);
+    final user = ref.refresh(userProvider);
     return user.when(
       error: (error, _) => Text('Please login again. $error'),
       loading: () => const Center(child: CircularProgressIndicator()),
       data: (data) {
+        userData = data!;
         return GestureDetector(
           onTap: () {
             // Navigate to the user profile page
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => UserProfileScreen(user: data),
+                builder: (context) => UserProfileScreen(
+                  user: data,
+                ),
               ),
             );
           },
@@ -49,7 +54,8 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
                 tag: 'userImage',
                 child: CircleAvatar(
                   radius: 30,
-                  backgroundImage: NetworkImage('assets/images/profile.png'),
+                  backgroundImage: FileImage(File(data.imagePath)),
+                  backgroundColor: Colors.transparent,
                 ),
               ),
               const SizedBox(height: 20),
@@ -156,7 +162,11 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => AvatarSelectionScreen(
-                          initialSelection: 'man.png',
+                          initialSelection: userData.avatar,
+                          onAvatarSelected: (selectedAvatar) async {
+                            updateUserAvatarInDatabase(
+                                userData.uid, selectedAvatar);
+                          },
                         )),
               );
             },
@@ -186,6 +196,23 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
           ),
         ],
       ),
+    );
+  }
+
+  void updateUserAvatarInDatabase(String userID, String selectedAvatar) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userID)
+        .update({'avatar': selectedAvatar});
+
+    ref.refresh(userProvider);
+    final user = ref.watch(userProvider);
+    user.when(
+      data: (data) {
+        userData = data!;
+      },
+      error: (error, _) {},
+      loading: () {},
     );
   }
 }
