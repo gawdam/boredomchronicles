@@ -65,17 +65,37 @@ class UserImagePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => openImagePickerDialog(context),
-      child: Hero(
-        tag: 'userImage',
-        child: CircleAvatar(
-          radius: 60,
-          backgroundColor: Theme.of(context).colorScheme.onPrimary,
-          child: CircleAvatar(
-            radius: 55,
-            backgroundImage: FileImage(File(imagePath)),
-            backgroundColor: Theme.of(context).canvasColor,
+      child: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          Hero(
+            tag: 'userImage',
+            child: CircleAvatar(
+              radius: 60,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: CircleAvatar(
+                radius: 55,
+                backgroundImage: FileImage(File(imagePath)),
+                backgroundColor: Theme.of(context).canvasColor,
+              ),
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => openImagePickerDialog(context),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

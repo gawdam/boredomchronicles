@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/screens/auth.dart';
 import 'package:boredomapp/screens/avatar.dart';
+import 'package:boredomapp/screens/connections.dart';
 import 'package:boredomapp/screens/splash.dart';
 import 'package:boredomapp/screens/userprofile.dart';
 import 'package:boredomapp/services/logout_service.dart';
@@ -53,9 +54,13 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
               Hero(
                 tag: 'userImage',
                 child: CircleAvatar(
-                  radius: 30,
-                  backgroundImage: FileImage(File(data.imagePath)),
-                  backgroundColor: Colors.transparent,
+                  radius: 40,
+                  backgroundColor: Theme.of(context).canvasColor,
+                  child: CircleAvatar(
+                    radius: 35,
+                    backgroundImage: FileImage(File(data.imagePath)),
+                    backgroundColor: Colors.transparent,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -90,8 +95,8 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
             return WillPopScope(
               onWillPop: () async => false, // Disable back button during logout
               child: AlertDialog(
-                title: const Text('Confirm Logout'),
-                content: const Text('Are you sure you want to logout?'),
+                title: const Text('Are you sure?'),
+                content: const Text('''Your account & data will be deleted.'''),
                 actions: <Widget>[
                   TextButton(
                     onPressed: isLoggingOut
@@ -101,7 +106,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
                           },
                     child: const Text('No'),
                   ),
-                  ElevatedButton(
+                  TextButton(
                     onPressed: () async {
                       try {
                         // Set the flag to indicate that the user is logging out
@@ -131,7 +136,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
                     },
                     child: isLoggingOut
                         ? const CircularProgressIndicator() // Show a progress indicator instead of "Yes"
-                        : const Text('Yes'),
+                        : const Text('Delete my account'),
                   ),
                 ],
               ),
@@ -175,7 +180,12 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
             leading: const Icon(Icons.people),
             title: const Text('Connections'),
             onTap: () {
-              // Handle the Connections tap
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        ConnectionsScreen(connectionState: "Not connected")),
+              );
             },
           ),
           const Divider(),
