@@ -18,6 +18,7 @@ class BoredomGauge extends ConsumerStatefulWidget {
 }
 
 class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
+  final avatar = 'assets/images/man.png';
   String _getAvatar() {
     final user = ref.watch(userProvider);
     final avatarFile = user.when(

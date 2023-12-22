@@ -38,14 +38,18 @@ class RequestConnectionWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text('Not connected'),
-        // Widget for sending connection request
-        ElevatedButton(
-          onPressed: () {
-            // Implement logic to send connection request
-          },
-          child: Icon(Icons.person_add_alt_sharp),
+        TextButton.icon(
+          icon: Image.asset(
+            'assets/images/add_friend.png',
+            scale: 20,
+          ),
+          label: Text(
+            'Add Connection',
+            style: TextStyle(fontSize: 22),
+          ),
+          onPressed: () {},
         ),
       ],
     );

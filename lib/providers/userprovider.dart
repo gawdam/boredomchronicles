@@ -20,11 +20,11 @@ Future<UserData> getUserData(String userId) async {
   final user =
       await FirebaseFirestore.instance.collection('users').doc(userId).get();
   return UserData(
-      uid: userId,
-      username: user.data()!['username'],
-      avatar: user.data()![
-          'avatar'], // You might want to fetch the imageURL from Firestore as well
-      boredomValue: user.data()!['boredomValue'],
-      imagePath:
-          prefs.getString('user_image_path') ?? 'assets/images/sloth.png');
+    uid: userId,
+    username: user.data()!['username'],
+    avatar: user.data()![
+        'avatar'], // You might want to fetch the imageURL from Firestore as well
+    boredomValue: user.data()!['boredomValue'],
+    imagePath: prefs.getString('user_image_path') ?? 'assets/images/sloth.png',
+  );
 }

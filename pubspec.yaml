@@ -101,6 +101,7 @@ flutter:
     - assets/themes/base_theme_3.json
     - assets/images/sprite_0.png
     - assets/images/sprite_1.png
+    - assets/images/add_friend.png
 
 
   # 
