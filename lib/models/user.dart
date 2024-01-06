@@ -1,26 +1,36 @@
-enum connectionStates {
-  connected,
-  not_connected,
-  pending_incoming,
-  pending_outgoing
-}
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserData {
   final String uid;
   final String username;
   final String avatar;
   final double boredomValue;
-  final String imagePath;
-  final Enum? connectionState;
+  final String? imagePath;
+  final String? connectionState;
   final String? connectedToUsername;
+  final Timestamp? updateTimestamp;
 
   UserData({
     required this.uid,
     required this.username,
     required this.boredomValue,
     required this.avatar,
-    required this.imagePath,
-    this.connectionState = connectionStates.not_connected,
+    this.imagePath,
+    this.connectionState = 'not_connected',
     this.connectedToUsername,
+    this.updateTimestamp,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'uid': uid,
+      'username': username,
+      'boredomValue': boredomValue,
+      'avatar': avatar,
+      'imagePath': imagePath,
+      'connectionState': connectionState,
+      'connectedToUsername': connectedToUsername,
+      'updateTimestamp': updateTimestamp,
+    };
+  }
 }

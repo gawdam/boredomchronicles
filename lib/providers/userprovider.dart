@@ -25,6 +25,26 @@ Future<UserData> getUserData(String userId) async {
     avatar: user.data()![
         'avatar'], // You might want to fetch the imageURL from Firestore as well
     boredomValue: user.data()!['boredomValue'],
-    imagePath: prefs.getString('user_image_path') ?? 'assets/images/sloth.png',
+    imagePath: user.data()!['imagePath'],
+    connectionState: user.data()!['connectionState'],
+    connectedToUsername: user.data()!['connectedToUsername'],
   );
+}
+
+Future<void> saveUserDataToCloud(UserData user) async {
+  try {
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      'uid': user.uid,
+      'username': user.username,
+      'boredomValue': user.boredomValue,
+      'avatar': user.avatar,
+      'imagePath': user.imagePath,
+      'connectionState': user.connectionState,
+      'connectedToUsername': user.connectedToUsername,
+      'updateTimestamp': Timestamp.now(),
+    });
+  } catch (e) {
+    print('Error saving user data to cloud: $e');
+    // Handle the error as needed
+  }
 }

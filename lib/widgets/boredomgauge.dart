@@ -156,6 +156,25 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                       enableAnimation: true,
                       animationDuration: 500,
                     ),
+                    MarkerPointer(
+                      overlayRadius: 1,
+
+                      enableDragging: false,
+                      value: 20,
+                      onValueChanged: (double newValue) {
+                        widget.onValueChanged(newValue);
+                      },
+
+                      color: const Color.fromARGB(
+                          255, 110, 110, 110), // Color of the marker pointer
+                      markerOffset: 3, // Offset to position the marker pointer
+                      markerType: MarkerType.image,
+                      imageUrl: _getAvatar() ?? 'assets/images/man.png',
+                      markerWidth: 60,
+                      markerHeight: 60,
+                      enableAnimation: true,
+                      animationDuration: 500,
+                    ),
                   ]),
             ],
           ),

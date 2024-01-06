@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:boredomapp/models/user.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:boredomapp/widgets/user_image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,6 +20,25 @@ class UserProfileScreen extends StatelessWidget {
     final prefs = await SharedPreferences.getInstance();
     print(imagePath!);
     prefs.setString('user_image_path', imagePath!);
+  }
+
+  Future<String?> uploadImageToCloud(File image) async {
+    try {
+      final Reference storageReference = FirebaseStorage.instance.ref();
+
+      String fileName =
+          'profile_pic_${DateTime.now().millisecondsSinceEpoch}.png';
+
+      UploadTask uploadTask = storageReference.child(fileName).putFile(image);
+
+      TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() {});
+      String downloadURL = await taskSnapshot.ref.getDownloadURL();
+
+      return downloadURL;
+    } catch (e) {
+      print('Error uploading image to Firebase Storage: $e');
+      return null;
+    }
   }
 
   @override
@@ -42,10 +62,11 @@ class UserProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 UserImagePicker(
-                  imagePath: user.imagePath,
+                  imagePath: user.imagePath ?? 'assets/images/profile.png',
                   onImageSelected: (File? selectedImage) {
                     if (selectedImage != null) {
                       saveImageLocally(selectedImage);
+                      uploadImageToCloud(selectedImage);
                     } else {
                       // Handle the case when no image is selected
                     }

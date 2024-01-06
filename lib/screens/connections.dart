@@ -1,15 +1,29 @@
+import 'package:boredomapp/models/user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ConnectionsScreen extends StatelessWidget {
-  final String connectionState;
+class ConnectionsScreen extends ConsumerWidget {
+  final UserData userData;
 
-  ConnectionsScreen({required this.connectionState});
+  ConnectionsScreen({required this.userData});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Connections'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: CircleAvatar(
+              backgroundColor: Color.fromARGB(204, 228, 37, 24),
+              radius: 5,
+            ),
+          )
+        ],
       ),
       body: Center(
         child: buildConnectionWidget(),
@@ -18,14 +32,14 @@ class ConnectionsScreen extends StatelessWidget {
   }
 
   Widget buildConnectionWidget() {
-    switch (connectionState) {
-      case 'Not connected':
-        return RequestConnectionWidget();
-      case 'Pending approval - sent':
+    switch (userData.connectionState) {
+      case 'not_connected':
+        return RequestConnectionWidget(userData: userData);
+      case 'pending_outgoing':
         return WithdrawConnectionRequestWidget();
-      case 'Pending approval - received':
+      case 'pending_incoming':
         return AcceptRejectConnectionRequestWidget();
-      case 'Connected':
+      case 'connected':
         return ConnectedUserWidget();
       default:
         return Container(); // Handle other states as needed
@@ -33,9 +47,134 @@ class ConnectionsScreen extends StatelessWidget {
   }
 }
 
-class RequestConnectionWidget extends StatelessWidget {
+class RequestConnectionWidget extends StatefulWidget {
+  UserData userData;
+
+  RequestConnectionWidget({required this.userData});
+
+  @override
+  State<RequestConnectionWidget> createState() =>
+      _RequestConnectionWidgetState();
+}
+
+class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
+  String _connectionAttempt = 'no-connection-attempt';
+
+  Future<void> sendConnection(username) async {
+    String? reciever_uid;
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .get();
+    if (querySnapshot.docs.isNotEmpty) {
+      // Get the user document
+      DocumentSnapshot userDoc = querySnapshot.docs.first;
+      reciever_uid = userDoc.id;
+
+      // Check the connectionStatus field
+      String connectionStatus = userDoc['connectionStatus'];
+
+      // Return false if the connectionStatus is 'Pending' or 'Connected'
+      if (connectionStatus == 'Pending' || connectionStatus == 'Connected') {
+        setState(() {
+          _connectionAttempt = 'error-user-taken';
+        });
+      } else {
+        await FirebaseFirestore.instance
+            .collection('connection-request')
+            .doc(widget.userData.uid)
+            .update({
+          'timestamp': null,
+          'sentByUID': widget.userData.uid,
+          'sentToUID': reciever_uid,
+          'connectionStatus': 'pending_outgoing',
+        });
+
+        setState(() {
+          _connectionAttempt = 'success';
+        });
+      }
+    } else {
+      // The user with the provided username does not exist
+      setState(() {
+        _connectionAttempt = 'error-no-user';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    void addConnection(BuildContext context) {
+      String username = ''; // Variable to store the entered username
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return _connectionAttempt == 'error-no-user'
+              ? StatefulBuilder(builder: (context, setState) {
+                  return AlertDialog(
+                    title: Text('Connection Error'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('There is no such user!'),
+                        SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () {
+                            // Reset _connectionAttempt to 'not connected'
+                            _connectionAttempt = 'not connected';
+                            Navigator.pop(context);
+                          },
+                          child: Text('Okay'),
+                        ),
+                      ],
+                    ),
+                  );
+                })
+              : StatefulBuilder(builder: (context, setState) {
+                  return AlertDialog(
+                    title: Text('Add Connection'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          onChanged: (value) {
+                            // Update the username variable when the text changes
+                            username = value;
+                          },
+                          decoration:
+                              InputDecoration(labelText: 'Enter Username'),
+                        ),
+                        SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                // Close the dialog when the 'X' button is pressed
+                                Navigator.pop(context);
+                              },
+                              child: Text('Close'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // TODO: Handle the submit logic, e.g., send connection request
+                                sendConnection(username);
+                                // Close the dialog after handling the submit action
+                                // Navigator.pop(context);
+                              },
+                              child: Text('Submit'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                });
+        },
+      );
+    }
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -49,7 +188,9 @@ class RequestConnectionWidget extends StatelessWidget {
             'Add Connection',
             style: TextStyle(fontSize: 22),
           ),
-          onPressed: () {},
+          onPressed: () {
+            addConnection(context);
+          },
         ),
       ],
     );

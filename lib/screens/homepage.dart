@@ -51,10 +51,8 @@ class _HomePage extends State<HomePage> {
   Future<void> _saveBoredomValue(boredomValue) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setDouble('boredomValue', boredomValue);
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .update({'boredomValue': _boredomValue});
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).update(
+        {'boredomValue': _boredomValue, 'updateTimestamp': Timestamp.now()});
   }
 
   Future<void> _loadBoredomValue() async {

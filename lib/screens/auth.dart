@@ -1,4 +1,5 @@
 import 'package:boredomapp/models/funny_words.dart';
+import 'package:boredomapp/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -31,14 +32,20 @@ class _AuthScreen extends State<AuthScreen> {
           email: "${_usernameController.text}@boredomapp.com",
           password: '12345678',
         );
+        UserData user = UserData(
+          uid: userCredentials.user!.uid,
+          username: _usernameController.text,
+          boredomValue: initialBoredomValue,
+          avatar: 'man.png',
+          imagePath: null,
+          connectionState: null,
+          connectedToUsername: null,
+          updateTimestamp: Timestamp.now(),
+        );
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userCredentials.user?.uid)
-            .set({
-          'username': _usernameController.text,
-          'boredomValue': initialBoredomValue,
-          'avatar': 'man.png',
-        });
+            .set(user.toMap());
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -61,7 +68,6 @@ class _AuthScreen extends State<AuthScreen> {
           .collection('users')
           .where('username', isEqualTo: username)
           .get();
-      print('here2');
       if (result.docs.isNotEmpty) {
         setState(() {
           _isUsernameAvailable = false;
