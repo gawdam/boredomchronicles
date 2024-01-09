@@ -3,12 +3,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class UserImagePicker extends StatelessWidget {
+class UserImagePicker extends StatefulWidget {
   final String imagePath;
   final Function(File?) onImageSelected;
 
   UserImagePicker({required this.imagePath, required this.onImageSelected});
+
+  @override
+  State<UserImagePicker> createState() => _UserImagePickerState();
+}
+
+class _UserImagePickerState extends State<UserImagePicker> {
+  late String _displayImage = widget.imagePath;
 
   Future<void> openImagePickerDialog(BuildContext context) async {
     return showDialog(
@@ -29,10 +37,14 @@ class UserImagePicker extends StatelessWidget {
                     if (pickedFile != null) {
                       return File(pickedFile.path);
                     }
-                    return File(imagePath);
+                    return File(widget.imagePath);
                   });
 
-                  onImageSelected(pickedImage);
+                  await widget.onImageSelected(pickedImage);
+                  final prefs = await SharedPreferences.getInstance();
+                  setState(() {
+                    _displayImage = prefs.getString('user_image_path')!;
+                  });
 
                   Navigator.pop(context);
                 },
@@ -47,10 +59,14 @@ class UserImagePicker extends StatelessWidget {
                     if (pickedFile != null) {
                       return File(pickedFile.path);
                     }
-                    return File(imagePath);
+                    return File(widget.imagePath);
                   });
 
-                  onImageSelected(pickedImage);
+                  await widget.onImageSelected(pickedImage);
+                  final prefs = await SharedPreferences.getInstance();
+                  setState(() {
+                    _displayImage = prefs.getString('user_image_path')!;
+                  });
                   Navigator.pop(context);
                 },
               ),
@@ -73,11 +89,17 @@ class UserImagePicker extends StatelessWidget {
             child: CircleAvatar(
               radius: 60,
               backgroundColor: Theme.of(context).colorScheme.primary,
-              child: CircleAvatar(
-                radius: 55,
-                backgroundImage: FileImage(File(imagePath)),
-                backgroundColor: Theme.of(context).canvasColor,
-              ),
+              child: _displayImage == widget.imagePath
+                  ? CircleAvatar(
+                      radius: 55,
+                      backgroundImage: NetworkImage(_displayImage),
+                      backgroundColor: Theme.of(context).canvasColor,
+                    )
+                  : CircleAvatar(
+                      radius: 55,
+                      backgroundImage: FileImage(File(_displayImage)),
+                      backgroundColor: Theme.of(context).canvasColor,
+                    ),
             ),
           ),
           Padding(

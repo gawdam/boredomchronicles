@@ -2,13 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserData {
   final String uid;
-  final String username;
-  final String avatar;
-  final double boredomValue;
-  final String? imagePath;
-  final String? connectionState;
-  final String? connectedToUsername;
-  final Timestamp? updateTimestamp;
+  String username;
+  String avatar;
+  double boredomValue;
+  String? imagePath;
+  String? connectionState;
+  String? connectedToUsername;
+  Timestamp? updateTimestamp;
 
   UserData({
     required this.uid,

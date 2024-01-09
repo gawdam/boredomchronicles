@@ -2,6 +2,7 @@ import 'package:boredomapp/models/funny_words.dart';
 import 'package:boredomapp/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 final _firebase = FirebaseAuth.instance;
@@ -32,12 +33,17 @@ class _AuthScreen extends State<AuthScreen> {
           email: "${_usernameController.text}@boredomapp.com",
           password: '12345678',
         );
+        final ref = await FirebaseStorage.instance
+            .ref()
+            .child('user_images')
+            .child('sloth.png');
+        String imageURL = await ref.getDownloadURL();
         UserData user = UserData(
           uid: userCredentials.user!.uid,
           username: _usernameController.text,
           boredomValue: initialBoredomValue,
           avatar: 'man.png',
-          imagePath: null,
+          imagePath: imageURL,
           connectionState: null,
           connectedToUsername: null,
           updateTimestamp: Timestamp.now(),

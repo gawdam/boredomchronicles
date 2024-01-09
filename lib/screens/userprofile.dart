@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:boredomapp/models/user.dart';
+import 'package:boredomapp/providers/userprovider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:boredomapp/widgets/user_image_picker.dart';
@@ -9,31 +10,31 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserProfileScreen extends StatelessWidget {
   UserProfileScreen({Key? key, required this.user}) : super(key: key);
   final UserData user;
+  String? imagePath;
 
   Future<void> saveImageLocally(File image) async {
     final appDir = await getApplicationDocumentsDirectory();
-    final fileName = user.imagePath;
     final savedImage = await image.copy('${appDir.path}/profile_pic.png');
     final imagePath = savedImage.path;
 
     // Save the image path in SharedPreferences
     final prefs = await SharedPreferences.getInstance();
-    print(imagePath!);
-    prefs.setString('user_image_path', imagePath!);
+    prefs.setString('user_image_path', imagePath);
   }
 
-  Future<String?> uploadImageToCloud(File image) async {
+  Future<String?> uploadImageToCloud(File image, String userId) async {
     try {
-      final Reference storageReference = FirebaseStorage.instance.ref();
+      final Reference storageReference =
+          FirebaseStorage.instance.ref().child('user_images');
 
-      String fileName =
-          'profile_pic_${DateTime.now().millisecondsSinceEpoch}.png';
+      String fileName = '$userId.png';
 
       UploadTask uploadTask = storageReference.child(fileName).putFile(image);
 
       TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() {});
       String downloadURL = await taskSnapshot.ref.getDownloadURL();
-
+      user.imagePath = downloadURL;
+      await saveUserDataToCloud(user);
       return downloadURL;
     } catch (e) {
       print('Error uploading image to Firebase Storage: $e');
@@ -62,13 +63,11 @@ class UserProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 UserImagePicker(
-                  imagePath: user.imagePath ?? 'assets/images/profile.png',
+                  imagePath: user.imagePath!,
                   onImageSelected: (File? selectedImage) {
                     if (selectedImage != null) {
+                      uploadImageToCloud(selectedImage, user.uid);
                       saveImageLocally(selectedImage);
-                      uploadImageToCloud(selectedImage);
-                    } else {
-                      // Handle the case when no image is selected
                     }
                   },
                 ),

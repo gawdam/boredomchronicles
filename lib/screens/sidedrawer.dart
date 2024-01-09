@@ -1,15 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:boredomapp/providers/userprovider.dart';
-import 'package:boredomapp/screens/auth.dart';
 import 'package:boredomapp/screens/avatar.dart';
 import 'package:boredomapp/screens/connections.dart';
-import 'package:boredomapp/screens/splash.dart';
 import 'package:boredomapp/screens/userprofile.dart';
 import 'package:boredomapp/services/logout_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,6 +24,24 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
   final LogoutService _logoutService = LogoutService();
 
   late UserData userData;
+  String? imagePath;
+  @override
+  void initState() {
+    super.initState();
+    // Fetch user data here
+    // ref.refresh(userProvider);
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    final user = await ref.refresh(userProvider.future);
+    if (user != null) {
+      setState(() {
+        userData = user;
+        imagePath = user.imagePath;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +55,6 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
             return CircularProgressIndicator();
           }
           userData = data;
-          String imagePath;
-          if (data.imagePath == null) {
-            imagePath = 'assets/images/sloth.png';
-          } else
-            imagePath = data.imagePath!;
 
           return GestureDetector(
             onTap: () {
@@ -67,12 +76,18 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
                   child: CircleAvatar(
                     radius: 40,
                     backgroundColor: Theme.of(context).canvasColor,
-                    child: CircleAvatar(
-                      radius: 35,
-                      backgroundImage:
-                          FileImage(File('assets/images/sloth.png')),
-                      backgroundColor: Colors.transparent,
-                    ),
+                    child: imagePath == null
+                        ? CircleAvatar(
+                            radius: 35,
+                            backgroundImage:
+                                AssetImage('assets/images/sloth.png'),
+                            backgroundColor: Colors.transparent,
+                          )
+                        : CircleAvatar(
+                            radius: 35,
+                            backgroundImage: NetworkImage(imagePath!),
+                            backgroundColor: Colors.transparent,
+                          ),
                   ),
                 ),
                 const SizedBox(height: 20),
