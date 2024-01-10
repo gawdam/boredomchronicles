@@ -145,7 +145,7 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                           255, 110, 110, 110), // Color of the marker pointer
                       markerOffset: 3, // Offset to position the marker pointer
                       markerType: MarkerType.image,
-                      imageUrl: _getAvatar() ?? 'assets/images/man.png',
+                      imageUrl: _getAvatar(),
 
                       markerWidth: 60,
                       markerHeight: 60,
@@ -165,7 +165,7 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                           255, 110, 110, 110), // Color of the marker pointer
                       markerOffset: 3, // Offset to position the marker pointer
                       markerType: MarkerType.image,
-                      imageUrl: _getAvatar() ?? 'assets/images/man.png',
+                      imageUrl: _getAvatar(),
                       markerWidth: 60,
                       markerHeight: 60,
                       enableAnimation: true,

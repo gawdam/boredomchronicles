@@ -27,14 +27,14 @@ class _AvatarSelectionScreenState extends State<AvatarSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Choose Avatar'),
+        title: const Text('Choose Avatar'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             buildAvatarSelection('man.png'),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             buildAvatarSelection('woman.png'),
           ],
         ),

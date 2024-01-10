@@ -3,13 +3,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class UserImagePicker extends StatefulWidget {
   final String imagePath;
   final Function(File?) onImageSelected;
 
-  UserImagePicker({required this.imagePath, required this.onImageSelected});
+  const UserImagePicker(
+      {super.key, required this.imagePath, required this.onImageSelected});
 
   @override
   State<UserImagePicker> createState() => _UserImagePickerState();
@@ -41,7 +41,6 @@ class _UserImagePickerState extends State<UserImagePicker> {
                   });
 
                   await widget.onImageSelected(pickedImage);
-                  final prefs = await SharedPreferences.getInstance();
                   setState(() {
                     _displayImage = pickedImage!;
                   });
@@ -63,7 +62,6 @@ class _UserImagePickerState extends State<UserImagePicker> {
                   });
 
                   await widget.onImageSelected(pickedImage);
-                  final prefs = await SharedPreferences.getInstance();
                   setState(() {
                     _displayImage = pickedImage!;
                   });

@@ -2,22 +2,20 @@ import 'package:boredomapp/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ConnectionsScreen extends ConsumerWidget {
   final UserData userData;
 
-  ConnectionsScreen({required this.userData});
+  const ConnectionsScreen({super.key, required this.userData});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Connections'),
-        actions: [
+        title: const Text('Connections'),
+        actions: const [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.0),
             child: CircleAvatar(
               backgroundColor: Color.fromARGB(204, 228, 37, 24),
               radius: 5,
@@ -36,21 +34,22 @@ class ConnectionsScreen extends ConsumerWidget {
       case 'not_connected':
         return RequestConnectionWidget(userData: userData);
       case 'pending_outgoing':
-        return WithdrawConnectionRequestWidget();
+        return const WithdrawConnectionRequestWidget();
       case 'pending_incoming':
-        return AcceptRejectConnectionRequestWidget();
+        return const AcceptRejectConnectionRequestWidget();
       case 'connected':
-        return ConnectedUserWidget();
+        return const ConnectedUserWidget();
       default:
         return Container(); // Handle other states as needed
     }
   }
 }
 
+// ignore: must_be_immutable
 class RequestConnectionWidget extends StatefulWidget {
   UserData userData;
 
-  RequestConnectionWidget({required this.userData});
+  RequestConnectionWidget({super.key, required this.userData});
 
   @override
   State<RequestConnectionWidget> createState() =>
@@ -61,7 +60,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
   String _connectionAttempt = 'no-connection-attempt';
 
   Future<void> sendConnection(username) async {
-    String? reciever_uid;
+    String? recieverUid;
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('users')
         .where('username', isEqualTo: username)
@@ -69,7 +68,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
     if (querySnapshot.docs.isNotEmpty) {
       // Get the user document
       DocumentSnapshot userDoc = querySnapshot.docs.first;
-      reciever_uid = userDoc.id;
+      recieverUid = userDoc.id;
 
       // Check the connectionStatus field
       String connectionStatus = userDoc['connectionStatus'];
@@ -86,7 +85,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
             .update({
           'timestamp': null,
           'sentByUID': widget.userData.uid,
-          'sentToUID': reciever_uid,
+          'sentToUID': recieverUid,
           'connectionStatus': 'pending_outgoing',
         });
 
@@ -113,19 +112,19 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
           return _connectionAttempt == 'error-no-user'
               ? StatefulBuilder(builder: (context, setState) {
                   return AlertDialog(
-                    title: Text('Connection Error'),
+                    title: const Text('Connection Error'),
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('There is no such user!'),
-                        SizedBox(height: 16),
+                        const Text('There is no such user!'),
+                        const SizedBox(height: 16),
                         TextButton(
                           onPressed: () {
                             // Reset _connectionAttempt to 'not connected'
                             _connectionAttempt = 'not connected';
                             Navigator.pop(context);
                           },
-                          child: Text('Okay'),
+                          child: const Text('Okay'),
                         ),
                       ],
                     ),
@@ -133,7 +132,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
                 })
               : StatefulBuilder(builder: (context, setState) {
                   return AlertDialog(
-                    title: Text('Add Connection'),
+                    title: const Text('Add Connection'),
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -142,10 +141,10 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
                             // Update the username variable when the text changes
                             username = value;
                           },
-                          decoration:
-                              InputDecoration(labelText: 'Enter Username'),
+                          decoration: const InputDecoration(
+                              labelText: 'Enter Username'),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -154,7 +153,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
                                 // Close the dialog when the 'X' button is pressed
                                 Navigator.pop(context);
                               },
-                              child: Text('Close'),
+                              child: const Text('Close'),
                             ),
                             TextButton(
                               onPressed: () {
@@ -163,7 +162,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
                                 // Close the dialog after handling the submit action
                                 // Navigator.pop(context);
                               },
-                              child: Text('Submit'),
+                              child: const Text('Submit'),
                             ),
                           ],
                         ),
@@ -184,7 +183,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
             'assets/images/add_friend.png',
             scale: 20,
           ),
-          label: Text(
+          label: const Text(
             'Add Connection',
             style: TextStyle(fontSize: 22),
           ),
@@ -198,18 +197,20 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
 }
 
 class WithdrawConnectionRequestWidget extends StatelessWidget {
+  const WithdrawConnectionRequestWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text('Pending approval - sent'),
+        const Text('Pending approval - sent'),
         // Widget for withdrawing connection request
         ElevatedButton(
           onPressed: () {
             // Implement logic to withdraw connection request
           },
-          child: Text('Withdraw Request'),
+          child: const Text('Withdraw Request'),
         ),
       ],
     );
@@ -217,12 +218,14 @@ class WithdrawConnectionRequestWidget extends StatelessWidget {
 }
 
 class AcceptRejectConnectionRequestWidget extends StatelessWidget {
+  const AcceptRejectConnectionRequestWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text('Pending approval - received'),
+        const Text('Pending approval - received'),
         // Widget for displaying connected user's profile picture and username
         // Widget for accepting or rejecting connection request
         Row(
@@ -232,13 +235,13 @@ class AcceptRejectConnectionRequestWidget extends StatelessWidget {
               onPressed: () {
                 // Implement logic to accept connection request
               },
-              child: Text('Accept'),
+              child: const Text('Accept'),
             ),
             ElevatedButton(
               onPressed: () {
                 // Implement logic to reject connection request
               },
-              child: Text('Reject'),
+              child: const Text('Reject'),
             ),
           ],
         ),
@@ -248,9 +251,11 @@ class AcceptRejectConnectionRequestWidget extends StatelessWidget {
 }
 
 class ConnectedUserWidget extends StatelessWidget {
+  const ConnectedUserWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text('Connected'),

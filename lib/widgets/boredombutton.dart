@@ -5,7 +5,7 @@ class BoredomButton extends StatefulWidget {
   final Function(double) onPressed;
   final double boredomValue;
 
-  BoredomButton({
+  const BoredomButton({
     super.key,
     required this.boredomValue,
     required this.onPressed,

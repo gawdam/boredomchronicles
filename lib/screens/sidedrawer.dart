@@ -51,7 +51,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
       loading: () => const Center(child: CircularProgressIndicator()),
       data: (data) {
         if (data == null) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         }
         setState(() {
           userData = data;
@@ -79,7 +79,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
                   radius: 40,
                   backgroundColor: Theme.of(context).canvasColor,
                   child: imagePath == null
-                      ? CircleAvatar(
+                      ? const CircleAvatar(
                           radius: 35,
                           backgroundImage:
                               AssetImage('assets/images/sloth.png'),
@@ -95,7 +95,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
               const SizedBox(height: 20),
               Text(
                 data.username,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                 ),
               ),
@@ -151,7 +151,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
                             context: context,
                             barrierDismissible: false,
                             builder: (BuildContext context) {
-                              return Center(
+                              return const Center(
                                 child: CircularProgressIndicator(),
                               );
                             },
@@ -230,7 +230,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
           ),
           ListTile(
             leading: const Icon(Icons.logout),
-            title: Text('Logout'),
+            title: const Text('Logout'),
             onTap: () {
               // Show logout confirmation dialog
               _showLogoutConfirmationDialog(context);
@@ -247,7 +247,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
         .doc(userID)
         .update({'avatar': selectedAvatar});
 
-    ref.refresh(userProvider);
+    ref.invalidate(userProvider);
     final user = ref.watch(userProvider);
     user.when(
       data: (data) {

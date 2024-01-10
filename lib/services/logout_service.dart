@@ -1,13 +1,7 @@
-import 'dart:convert';
-
-import 'package:boredomapp/main.dart';
 import 'package:boredomapp/models/user.dart';
-import 'package:boredomapp/screens/splash.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:json_theme/json_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LogoutService {
@@ -22,8 +16,7 @@ class LogoutService {
     try {
       Navigator.of(context).pop(); // Close the dialog
 
-      var userCredential =
-          await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
+      await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(
         EmailAuthProvider.credential(
           email: '${data.username}@boredomapp.com',
           password: '12345678',

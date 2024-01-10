@@ -7,6 +7,7 @@ import 'package:boredomapp/widgets/user_image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// ignore: must_be_immutable
 class UserProfileScreen extends StatelessWidget {
   UserProfileScreen({Key? key, required this.user, required this.imagePath})
       : super(key: key);
@@ -71,7 +72,7 @@ class UserProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 UserImagePicker(
-                  imagePath: imagePath!,
+                  imagePath: imagePath,
                   onImageSelected: (File? selectedImage) {
                     if (selectedImage != null) {
                       uploadImageToCloud(selectedImage, user.uid);

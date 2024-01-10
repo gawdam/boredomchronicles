@@ -33,7 +33,7 @@ class _AuthScreen extends State<AuthScreen> {
           email: "${_usernameController.text}@boredomapp.com",
           password: '12345678',
         );
-        final ref = await FirebaseStorage.instance
+        final ref = FirebaseStorage.instance
             .ref()
             .child('user_images')
             .child('sloth.png');
@@ -120,7 +120,7 @@ class _AuthScreen extends State<AuthScreen> {
                     width: 300,
                     child: Image.asset('assets/images/sloth.gif'),
                   ),
-                  Text(
+                  const Text(
                     "Begin your boredom chronicles!",
                     style: TextStyle(
                       fontSize: 25,
@@ -128,17 +128,17 @@ class _AuthScreen extends State<AuthScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 40,
                   ),
-                  Text(
+                  const Text(
                     "Let's get you a funky username!",
                     style: TextStyle(
                       fontSize: 20,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.black
@@ -146,14 +146,14 @@ class _AuthScreen extends State<AuthScreen> {
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     padding:
-                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),
+                        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),
                     child: Stack(
                       children: [
                         TextFormField(
                           controller: _usernameController,
                           decoration: InputDecoration(
                             labelText: 'Username',
-                            labelStyle: TextStyle(color: Colors.white),
+                            labelStyle: const TextStyle(color: Colors.white),
                             errorText: !_isUsernameAvailable
                                 ? 'Oops! Username already taken!'
                                 : null,
@@ -193,7 +193,7 @@ class _AuthScreen extends State<AuthScreen> {
                             child: Container(
                               width: 30,
                               height: 30,
-                              padding: EdgeInsets.all(1.0),
+                              padding: const EdgeInsets.all(1.0),
                               decoration: BoxDecoration(
                                 color: Theme.of(context)
                                     .colorScheme
@@ -214,16 +214,16 @@ class _AuthScreen extends State<AuthScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   if (!_isLoggingIn)
                     ElevatedButton.icon(
                       onPressed: () {
                         _submit();
                       },
-                      icon: Icon(Icons.arrow_forward),
-                      label: Text('Begin your journey'),
+                      icon: const Icon(Icons.arrow_forward),
+                      label: const Text('Begin your journey'),
                     ),
-                  if (_isLoggingIn) CircularProgressIndicator(),
+                  if (_isLoggingIn) const CircularProgressIndicator(),
                 ],
               ),
             ),
