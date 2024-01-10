@@ -8,9 +8,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfileScreen extends StatelessWidget {
-  UserProfileScreen({Key? key, required this.user}) : super(key: key);
+  UserProfileScreen({Key? key, required this.user, required this.imagePath})
+      : super(key: key);
   final UserData user;
-  String? imagePath;
+  String imagePath;
 
   Future<void> saveImageLocally(File image) async {
     final appDir = await getApplicationDocumentsDirectory();
@@ -24,6 +25,11 @@ class UserProfileScreen extends StatelessWidget {
 
   Future<String?> uploadImageToCloud(File image, String userId) async {
     try {
+      FirebaseStorage.instance
+          .ref()
+          .child('user_images')
+          .child('$userId.png')
+          .delete();
       final Reference storageReference =
           FirebaseStorage.instance.ref().child('user_images');
 
@@ -33,8 +39,10 @@ class UserProfileScreen extends StatelessWidget {
 
       TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() {});
       String downloadURL = await taskSnapshot.ref.getDownloadURL();
+
       user.imagePath = downloadURL;
       await saveUserDataToCloud(user);
+      print(user.imagePath);
       return downloadURL;
     } catch (e) {
       print('Error uploading image to Firebase Storage: $e');
@@ -50,7 +58,7 @@ class UserProfileScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, imagePath);
           },
         ),
       ),
@@ -63,7 +71,7 @@ class UserProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 UserImagePicker(
-                  imagePath: user.imagePath!,
+                  imagePath: imagePath!,
                   onImageSelected: (File? selectedImage) {
                     if (selectedImage != null) {
                       uploadImageToCloud(selectedImage, user.uid);

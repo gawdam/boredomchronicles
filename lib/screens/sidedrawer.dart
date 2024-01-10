@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/screens/avatar.dart';
@@ -8,6 +9,7 @@ import 'package:boredomapp/services/logout_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user.dart';
 
@@ -28,85 +30,87 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
   @override
   void initState() {
     super.initState();
-    // Fetch user data here
-    // ref.refresh(userProvider);
-    _fetchUserData();
+    _fetchUserData().whenComplete(() => null);
   }
 
   Future<void> _fetchUserData() async {
-    final user = await ref.refresh(userProvider.future);
-    if (user != null) {
-      setState(() {
-        userData = user;
-        imagePath = user.imagePath;
-      });
-    }
+    ref.invalidate(userProvider);
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      imagePath = prefs.getString('user_image_path');
+    });
+  }
+
+  Widget getUserData() {
+    ref.invalidate(userProvider);
+    final user = ref.refresh(userProvider);
+    _fetchUserData();
+
+    return user.when(
+      error: (error, _) => Text('Please login again. $error'),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      data: (data) {
+        if (data == null) {
+          return CircularProgressIndicator();
+        }
+        setState(() {
+          userData = data;
+        });
+
+        return GestureDetector(
+          onTap: () {
+            // Navigate to the user profile page
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UserProfileScreen(
+                  user: userData,
+                  imagePath: imagePath!,
+                ),
+              ),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Hero(
+                tag: 'userImage',
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Theme.of(context).canvasColor,
+                  child: imagePath == null
+                      ? CircleAvatar(
+                          radius: 35,
+                          backgroundImage:
+                              AssetImage('assets/images/sloth.png'),
+                          backgroundColor: Colors.transparent,
+                        )
+                      : CircleAvatar(
+                          radius: 35,
+                          backgroundImage: FileImage(File(imagePath!)),
+                          backgroundColor: Colors.transparent,
+                        ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                data.username,
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget getUserData() {
-      final user = ref.refresh(userProvider);
-      return user.when(
-        error: (error, _) => Text('Please login again. $error'),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        data: (data) {
-          if (data == null) {
-            return CircularProgressIndicator();
-          }
-          userData = data;
-
-          return GestureDetector(
-            onTap: () {
-              // Navigate to the user profile page
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UserProfileScreen(
-                    user: data,
-                  ),
-                ),
-              );
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Hero(
-                  tag: 'userImage',
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Theme.of(context).canvasColor,
-                    child: imagePath == null
-                        ? CircleAvatar(
-                            radius: 35,
-                            backgroundImage:
-                                AssetImage('assets/images/sloth.png'),
-                            backgroundColor: Colors.transparent,
-                          )
-                        : CircleAvatar(
-                            radius: 35,
-                            backgroundImage: NetworkImage(imagePath!),
-                            backgroundColor: Colors.transparent,
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  data!.username,
-                  style: TextStyle(
-                    fontSize: 20,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    }
-
     Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
       Navigator.of(context).pop(); // Close the drawer
-      final user = ref.watch(userProvider);
+      final user = ref.refresh(userProvider);
 
       return user.when(
         error: (error, _) => Text('Please login again. $error'),

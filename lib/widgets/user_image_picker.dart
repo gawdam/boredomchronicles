@@ -16,7 +16,7 @@ class UserImagePicker extends StatefulWidget {
 }
 
 class _UserImagePickerState extends State<UserImagePicker> {
-  late String _displayImage = widget.imagePath;
+  late File _displayImage = File(widget.imagePath);
 
   Future<void> openImagePickerDialog(BuildContext context) async {
     return showDialog(
@@ -43,7 +43,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
                   await widget.onImageSelected(pickedImage);
                   final prefs = await SharedPreferences.getInstance();
                   setState(() {
-                    _displayImage = prefs.getString('user_image_path')!;
+                    _displayImage = pickedImage!;
                   });
 
                   Navigator.pop(context);
@@ -65,7 +65,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
                   await widget.onImageSelected(pickedImage);
                   final prefs = await SharedPreferences.getInstance();
                   setState(() {
-                    _displayImage = prefs.getString('user_image_path')!;
+                    _displayImage = pickedImage!;
                   });
                   Navigator.pop(context);
                 },
@@ -89,17 +89,11 @@ class _UserImagePickerState extends State<UserImagePicker> {
             child: CircleAvatar(
               radius: 60,
               backgroundColor: Theme.of(context).colorScheme.primary,
-              child: _displayImage == widget.imagePath
-                  ? CircleAvatar(
-                      radius: 55,
-                      backgroundImage: NetworkImage(_displayImage),
-                      backgroundColor: Theme.of(context).canvasColor,
-                    )
-                  : CircleAvatar(
-                      radius: 55,
-                      backgroundImage: FileImage(File(_displayImage)),
-                      backgroundColor: Theme.of(context).canvasColor,
-                    ),
+              child: CircleAvatar(
+                radius: 55,
+                backgroundImage: FileImage(_displayImage),
+                backgroundColor: Theme.of(context).canvasColor,
+              ),
             ),
           ),
           Padding(

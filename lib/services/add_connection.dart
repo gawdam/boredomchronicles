@@ -18,16 +18,16 @@ class AddConnection {
     }
 
     // Get user data for user_to
-    String reciever_uid = userSnapshot.docs.first.id;
+    String recieverUid = userSnapshot.docs.first.id;
 
     // Check if the other user's Connection status is connectionStates.connected
     // or connectionStates.pending_outgoing
     QuerySnapshot<Map<String, dynamic>> existingConnectionSnapshot =
         await FirebaseFirestore.instance
             .collection('connection-request')
-            .doc(reciever_uid)
+            .doc(recieverUid)
             .collection('connections')
-            .where('sentToUID', isEqualTo: reciever_uid)
+            .where('sentToUID', isEqualTo: recieverUid)
             .where('connectionStatus',
                 whereIn: ['connected', 'pending_outgoing']).get();
 
@@ -43,7 +43,7 @@ class AddConnection {
         .update({
       'timestamp': null,
       'sentByUID': userFrom,
-      'sentToUID': reciever_uid,
+      'sentToUID': recieverUid,
       'connectionStatus': 'pending_outgoing',
     });
 
