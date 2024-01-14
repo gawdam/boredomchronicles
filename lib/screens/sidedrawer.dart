@@ -42,7 +42,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
 
   Widget getUserData() {
     // ref.invalidate(userProvider);
-    final user = ref.read(userProvider);
+    final user = ref.watch(userProvider);
     _fetchUserData();
 
     return user.when(

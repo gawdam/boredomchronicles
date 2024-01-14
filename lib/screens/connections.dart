@@ -10,6 +10,7 @@ class ConnectionsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print(userData.connectionState);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Connections'),
@@ -31,7 +32,7 @@ class ConnectionsScreen extends ConsumerWidget {
 
   Widget buildConnectionWidget() {
     switch (userData.connectionState) {
-      case 'not_connected':
+      case null:
         return RequestConnectionWidget(userData: userData);
       case 'pending_outgoing':
         return const WithdrawConnectionRequestWidget();
@@ -59,6 +60,56 @@ class RequestConnectionWidget extends StatefulWidget {
 class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
   String _connectionAttempt = 'no-connection-attempt';
 
+  void showConnectionResultDialog(
+      BuildContext context, String _connectionAttempt) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        if (_connectionAttempt == 'error-no-user' ||
+            _connectionAttempt == 'error-user-taken') {
+          // Display error message for 'error-no-user'
+          return AlertDialog(
+            title: const Text('Connection Error'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_connectionAttempt == 'error-no-user'
+                    ? 'The username does not exist!'
+                    : 'This username is already taken!'),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Okay'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Display success message for other cases
+          return AlertDialog(
+            title: const Text('Verification Done'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Add any success message or content here
+                const Text('Verification successful!'),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Okay'),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+    );
+  }
+
   Future<void> sendConnection(username) async {
     String? recieverUid;
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -68,13 +119,15 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
     if (querySnapshot.docs.isNotEmpty) {
       // Get the user document
       DocumentSnapshot userDoc = querySnapshot.docs.first;
+      print(userDoc.id);
       recieverUid = userDoc.id;
 
       // Check the connectionStatus field
-      String connectionStatus = userDoc['connectionStatus'];
+      String? connectionState = userDoc['connectionState'];
 
-      // Return false if the connectionStatus is 'Pending' or 'Connected'
-      if (connectionStatus == 'Pending' || connectionStatus == 'Connected') {
+      // Return false if the connectionStatus is 'pending-outgoing' or 'connected'
+      if (connectionState == 'pending-outgoing' ||
+          connectionState == 'connected') {
         setState(() {
           _connectionAttempt = 'error-user-taken';
         });
@@ -82,7 +135,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
         await FirebaseFirestore.instance
             .collection('connection-request')
             .doc(widget.userData.uid)
-            .update({
+            .set({
           'timestamp': null,
           'sentByUID': widget.userData.uid,
           'sentToUID': recieverUid,
@@ -92,6 +145,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
         setState(() {
           _connectionAttempt = 'success';
         });
+        print('user-added');
       }
     } else {
       // The user with the provided username does not exist
@@ -99,6 +153,7 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
         _connectionAttempt = 'error-no-user';
       });
     }
+    showConnectionResultDialog(context, _connectionAttempt);
   }
 
   @override
@@ -109,67 +164,47 @@ class _RequestConnectionWidgetState extends State<RequestConnectionWidget> {
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          return _connectionAttempt == 'error-no-user'
-              ? StatefulBuilder(builder: (context, setState) {
-                  return AlertDialog(
-                    title: const Text('Connection Error'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('There is no such user!'),
-                        const SizedBox(height: 16),
-                        TextButton(
-                          onPressed: () {
-                            // Reset _connectionAttempt to 'not connected'
-                            _connectionAttempt = 'not connected';
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Okay'),
-                        ),
-                      ],
-                    ),
-                  );
-                })
-              : StatefulBuilder(builder: (context, setState) {
-                  return AlertDialog(
-                    title: const Text('Add Connection'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextField(
-                          onChanged: (value) {
-                            // Update the username variable when the text changes
-                            username = value;
-                          },
-                          decoration: const InputDecoration(
-                              labelText: 'Enter Username'),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              onPressed: () {
-                                // Close the dialog when the 'X' button is pressed
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Close'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                // TODO: Handle the submit logic, e.g., send connection request
-                                sendConnection(username);
-                                // Close the dialog after handling the submit action
-                                // Navigator.pop(context);
-                              },
-                              child: const Text('Submit'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                });
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Add Connection'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    onChanged: (value) {
+                      // Update the username variable when the text changes
+                      username = value;
+                    },
+                    decoration:
+                        const InputDecoration(labelText: 'Enter Username'),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          // Close the dialog when the 'X' button is pressed
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Close'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          // TODO: Handle the submit logic, e.g., send connection request
+
+                          // Close the dialog after handling the submit action
+                          Navigator.pop(context);
+                          sendConnection(username);
+                        },
+                        child: const Text('Submit'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          });
         },
       );
     }
