@@ -30,11 +30,10 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
   @override
   void initState() {
     super.initState();
-    _fetchUserData().whenComplete(() => null);
+    _fetchUserData().whenComplete(() => ref.invalidate(userProvider));
   }
 
   Future<void> _fetchUserData() async {
-    ref.invalidate(userProvider);
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       imagePath = prefs.getString('user_image_path');
@@ -42,8 +41,8 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
   }
 
   Widget getUserData() {
-    ref.invalidate(userProvider);
-    final user = ref.refresh(userProvider);
+    // ref.invalidate(userProvider);
+    final user = ref.read(userProvider);
     _fetchUserData();
 
     return user.when(
@@ -65,7 +64,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
               MaterialPageRoute(
                 builder: (context) => UserProfileScreen(
                   user: userData,
-                  imagePath: imagePath!,
+                  imagePath: imagePath ?? userData.imagePath!,
                 ),
               ),
             );
