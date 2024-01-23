@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UserImagePicker extends StatefulWidget {
-  final String imagePath;
+  final String? imagePath;
   final Function(File?) onImageSelected;
 
   const UserImagePicker(
@@ -16,7 +16,17 @@ class UserImagePicker extends StatefulWidget {
 }
 
 class _UserImagePickerState extends State<UserImagePicker> {
-  late File _displayImage = File(widget.imagePath);
+  late File _displayImage;
+  bool _stockImage = true;
+
+  @override
+  initState() {
+    super.initState();
+    if (widget.imagePath != null) {
+      _displayImage = File(widget.imagePath!);
+      _stockImage = false;
+    }
+  }
 
   Future<void> openImagePickerDialog(BuildContext context) async {
     return showDialog(
@@ -37,12 +47,15 @@ class _UserImagePickerState extends State<UserImagePicker> {
                     if (pickedFile != null) {
                       return File(pickedFile.path);
                     }
-                    return File(widget.imagePath);
+                    if (widget.imagePath == null) {
+                      return File(widget.imagePath!);
+                    }
                   });
 
                   await widget.onImageSelected(pickedImage);
                   setState(() {
                     _displayImage = pickedImage!;
+                    _stockImage = false;
                   });
 
                   Navigator.pop(context);
@@ -58,12 +71,15 @@ class _UserImagePickerState extends State<UserImagePicker> {
                     if (pickedFile != null) {
                       return File(pickedFile.path);
                     }
-                    return File(widget.imagePath);
+                    if (widget.imagePath == null) {
+                      return File(widget.imagePath!);
+                    }
                   });
 
                   await widget.onImageSelected(pickedImage);
                   setState(() {
                     _displayImage = pickedImage!;
+                    _stockImage = false;
                   });
                   Navigator.pop(context);
                 },
@@ -87,11 +103,17 @@ class _UserImagePickerState extends State<UserImagePicker> {
             child: CircleAvatar(
               radius: 60,
               backgroundColor: Theme.of(context).colorScheme.primary,
-              child: CircleAvatar(
-                radius: 55,
-                backgroundImage: FileImage(_displayImage),
-                backgroundColor: Theme.of(context).canvasColor,
-              ),
+              child: _stockImage
+                  ? CircleAvatar(
+                      radius: 55,
+                      backgroundImage: AssetImage('assets/images/sloth.png'),
+                      backgroundColor: Theme.of(context).canvasColor,
+                    )
+                  : CircleAvatar(
+                      radius: 55,
+                      backgroundImage: FileImage(_displayImage),
+                      backgroundColor: Theme.of(context).canvasColor,
+                    ),
             ),
           ),
           Padding(

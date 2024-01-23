@@ -64,7 +64,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
               MaterialPageRoute(
                 builder: (context) => UserProfileScreen(
                   user: userData,
-                  imagePath: imagePath ?? userData.imagePath!,
+                  imagePath: imagePath,
                 ),
               ),
             );
@@ -212,10 +212,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => ConnectionsScreen(
-                          userData: userData,
-                        )),
+                MaterialPageRoute(builder: (context) => ConnectionsScreen()),
               );
             },
           ),

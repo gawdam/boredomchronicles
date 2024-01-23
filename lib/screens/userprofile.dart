@@ -12,7 +12,7 @@ class UserProfileScreen extends StatelessWidget {
   UserProfileScreen({Key? key, required this.user, required this.imagePath})
       : super(key: key);
   final UserData user;
-  String imagePath;
+  String? imagePath;
 
   Future<void> saveImageLocally(File image) async {
     final appDir = await getApplicationDocumentsDirectory();

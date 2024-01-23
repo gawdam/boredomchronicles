@@ -21,7 +21,14 @@ class _AuthScreen extends State<AuthScreen> {
   final _usernameController = TextEditingController();
   bool _isUsernameAvailable = true;
   bool _isLoggingIn = false;
+  bool _isMounted = true;
   static double initialBoredomValue = 50.0;
+
+  @override
+  void dispose() {
+    _isMounted = false; // Set to false when the widget is disposed
+    super.dispose();
+  }
 
   void _submit() async {
     if (_form.currentState?.validate() ?? false) {
@@ -60,9 +67,11 @@ class _AuthScreen extends State<AuthScreen> {
           ),
         );
       } finally {
-        setState(() {
-          _isLoggingIn = false; // Set to false after login attempt
-        });
+        if (_isMounted) {
+          setState(() {
+            _isLoggingIn = false; // Set to false after login attempt
+          });
+        }
       }
     }
   }
@@ -145,8 +154,8 @@ class _AuthScreen extends State<AuthScreen> {
                           .withOpacity(0.6), // Dark semi-transparent color
                       borderRadius: BorderRadius.circular(10.0),
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 20),
                     child: Stack(
                       children: [
                         TextFormField(
