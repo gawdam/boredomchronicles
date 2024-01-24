@@ -1,9 +1,9 @@
 import 'package:boredomapp/models/user.dart';
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/services/manage_connection.dart';
-import 'package:boredomapp/widgets/add_connection.dart';
-import 'package:boredomapp/widgets/incoming_connection.dart';
-import 'package:boredomapp/widgets/withdraw_connection.dart';
+import 'package:boredomapp/widgets/connection_add.dart';
+import 'package:boredomapp/widgets/connection_incoming.dart';
+import 'package:boredomapp/widgets/connection_withdraw.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -62,7 +62,10 @@ class ConnectionsScreen extends ConsumerWidget {
           // setState(() {
           //   connectionColor = Colors.yellow;
           // });
-          return DisplayIncomingConnection();
+
+          return DisplayIncomingConnection(
+            currentUser: userData,
+          );
         }
       case 'connected':
         {
