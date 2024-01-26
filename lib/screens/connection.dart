@@ -2,6 +2,7 @@ import 'package:boredomapp/models/user.dart';
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/services/manage_connection.dart';
 import 'package:boredomapp/widgets/connection_add.dart';
+import 'package:boredomapp/widgets/connection_display.dart';
 import 'package:boredomapp/widgets/connection_incoming.dart';
 import 'package:boredomapp/widgets/connection_withdraw.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,14 +25,23 @@ class ConnectionsScreen extends ConsumerWidget {
     // setState(() {});
     // return Builder(builder: builder);
     return user.when(data: (UserData? data) {
+      Color connectionColor;
+      switch (data!.connectionState) {
+        case 'connected':
+          connectionColor = Colors.green;
+        case null:
+          connectionColor = Colors.red;
+        default:
+          connectionColor = Colors.yellow;
+      }
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Connections'),
+          title: const Text('Connection'),
           actions: [
             Padding(
               padding: EdgeInsets.all(16.0),
               child: CircleAvatar(
-                backgroundColor: Colors.red,
+                backgroundColor: connectionColor,
                 radius: 5,
               ),
             )
@@ -72,7 +82,9 @@ class ConnectionsScreen extends ConsumerWidget {
           // setState(() {
           //   connectionColor = Colors.green;
           // });
-          return const ConnectedUser();
+          return ConnectedUser(
+            currentUser: userData,
+          );
         }
       default:
         {
@@ -82,20 +94,5 @@ class ConnectionsScreen extends ConsumerWidget {
           return RequestConnection(userData: userData);
         }
     }
-  }
-}
-
-class ConnectedUser extends StatelessWidget {
-  const ConnectedUser({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('Connected'),
-        // Widget for displaying connected user's profile picture, username, and boredom value
-      ],
-    );
   }
 }

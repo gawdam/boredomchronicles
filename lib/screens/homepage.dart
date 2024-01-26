@@ -9,6 +9,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/boredombutton.dart';
 import '../widgets/boredomgauge.dart';
 
+String getBoredomIcon(double boredomValue) {
+  String borednessIcon = '😐';
+  if (boredomValue >= 0 && boredomValue <= 25) {
+    borednessIcon = '😐';
+  } else if (boredomValue > 25 && boredomValue <= 50) {
+    borednessIcon = '😕';
+  } else if (boredomValue > 50 && boredomValue <= 75) {
+    borednessIcon = '😟'; // Icon for medium boredom
+  } else {
+    borednessIcon = '😫';
+  } // Icon for high boredom
+
+  return borednessIcon;
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -75,21 +90,6 @@ class _HomePage extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Text getBoredomIcon(double boredomValue) {
-      String borednessIcon = '😐';
-      if (boredomValue >= 0 && boredomValue <= 25) {
-        borednessIcon = '😐';
-      } else if (boredomValue > 25 && boredomValue <= 50) {
-        borednessIcon = '😕';
-      } else if (boredomValue > 50 && boredomValue <= 75) {
-        borednessIcon = '😟'; // Icon for medium boredom
-      } else {
-        borednessIcon = '😫';
-      } // Icon for high boredom
-
-      return Text(borednessIcon, style: const TextStyle(fontSize: 40));
-    }
-
     return Scaffold(
       drawer: const SideDrawer(),
       appBar: AppBar(
@@ -134,7 +134,10 @@ class _HomePage extends State<HomePage> {
                                 .onPrimaryContainer),
                       ),
                       const SizedBox(height: 10),
-                      getBoredomIcon(_boredomValue)
+                      Text(
+                        getBoredomIcon(_boredomValue),
+                        style: const TextStyle(fontSize: 40),
+                      )
                       // You can add more widgets or information here
                     ],
                   ),

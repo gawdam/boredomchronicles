@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/screens/avatar.dart';
-import 'package:boredomapp/screens/connections.dart';
+import 'package:boredomapp/screens/connection.dart';
 import 'package:boredomapp/screens/userprofile.dart';
 import 'package:boredomapp/services/logout_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

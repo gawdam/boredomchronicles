@@ -62,7 +62,8 @@ class DisplayIncomingConnection extends ConsumerWidget {
                       CircleAvatar(
                         radius: 30,
                         backgroundImage: NetworkImage(sender!.imagePath!),
-                        backgroundColor: Colors.amber,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.background,
                       ),
                       SizedBox(height: 8),
                       Text(
