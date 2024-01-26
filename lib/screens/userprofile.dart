@@ -89,9 +89,23 @@ class UserProfileScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Connected to: Username2',
-                  style: TextStyle(fontSize: 16),
+                RichText(
+                  text: TextSpan(
+                    text: 'Connected to: ',
+                    style: TextStyle(fontFamily: 'PixelifySans', fontSize: 15),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: user.connectedToUsername,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondary, // You can set your desired color
+                            fontSize: 15,
+                            fontFamily: 'PixelifySans'),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
                 buildMoodSection('Today', '😊'),

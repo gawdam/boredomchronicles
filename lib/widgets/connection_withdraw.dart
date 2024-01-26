@@ -38,7 +38,8 @@ class WithdrawConnectionRequest extends ConsumerWidget {
         ),
         ElevatedButton(
           onPressed: () async {
-            await ManageConnection.withdrawConnection(userData.uid);
+            await ManageConnection.withdrawConnection(
+                userData.uid, userData.connectionID!);
             ref.invalidate(userProvider);
           },
           child: const Text('Withdraw Request'),

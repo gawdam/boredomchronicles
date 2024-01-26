@@ -18,15 +18,15 @@ Future<UserData> getUserData(String userId) async {
   final user =
       await FirebaseFirestore.instance.collection('users').doc(userId).get();
   return UserData(
-    uid: userId,
-    username: user.data()!['username'],
-    avatar: user.data()![
-        'avatar'], // You might want to fetch the imageURL from Firestore as well
-    boredomValue: user.data()!['boredomValue'],
-    imagePath: user.data()!['imagePath'],
-    connectionState: user.data()!['connectionState'],
-    connectedToUsername: user.data()!['connectedToUsername'],
-  );
+      uid: userId,
+      username: user.data()!['username'],
+      avatar: user.data()![
+          'avatar'], // You might want to fetch the imageURL from Firestore as well
+      boredomValue: user.data()!['boredomValue'],
+      imagePath: user.data()!['imagePath'],
+      connectionState: user.data()!['connectionState'],
+      connectedToUsername: user.data()!['connectedToUsername'],
+      connectionID: user.data()!['connectionID']);
 }
 
 Future<void> saveUserDataToCloud(UserData user) async {
@@ -40,6 +40,7 @@ Future<void> saveUserDataToCloud(UserData user) async {
       'connectionState': user.connectionState,
       'connectedToUsername': user.connectedToUsername,
       'updateTimestamp': Timestamp.now(),
+      'connectionID': user.connectionID
     });
   } catch (e) {
     print('Error saving user data to cloud: $e');

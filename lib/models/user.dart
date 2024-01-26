@@ -9,17 +9,18 @@ class UserData {
   String? connectionState;
   String? connectedToUsername;
   Timestamp? updateTimestamp;
+  String? connectionID;
 
-  UserData({
-    required this.uid,
-    required this.username,
-    required this.boredomValue,
-    required this.avatar,
-    this.imagePath,
-    this.connectionState = 'not_connected',
-    this.connectedToUsername,
-    this.updateTimestamp,
-  });
+  UserData(
+      {required this.uid,
+      required this.username,
+      required this.boredomValue,
+      required this.avatar,
+      this.imagePath,
+      this.connectionState = 'not_connected',
+      this.connectedToUsername,
+      this.updateTimestamp,
+      this.connectionID});
 
   Map<String, dynamic> toMap() {
     return {
@@ -31,6 +32,7 @@ class UserData {
       'connectionState': connectionState,
       'connectedToUsername': connectedToUsername,
       'updateTimestamp': updateTimestamp,
+      'connectionID': connectionID
     };
   }
 }

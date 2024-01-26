@@ -22,6 +22,16 @@ class ManageConnection {
 
       // Check the connectionStatus field
       String? connectionState = userDoc['connectionState'];
+      final reference = await FirebaseFirestore.instance
+          .collection('connection-request')
+          .doc();
+      final connectionID = reference.id;
+      reference.set({
+        'timestamp': Timestamp.now(),
+        'sentByUID': senderUid,
+        'sentToUID': receiverUid,
+        'connectionStatus': 'pending',
+      });
 
       // Return false if the connectionStatus is 'pending-outgoing' or 'connected'
       if (connectionState == 'pending_outgoing' ||
@@ -35,6 +45,7 @@ class ManageConnection {
             .update({
           'connectionState': 'pending_outgoing',
           'connectedToUsername': username,
+          'connectionID': connectionID
         });
 
         //Change reciever status to pending_incoming
@@ -44,17 +55,8 @@ class ManageConnection {
             .doc(receiverUid)
             .update({
           'connectionState': 'pending_incoming',
+          'connectionID': connectionID
           // 'connectedToUsername': username,
-        });
-
-        await FirebaseFirestore.instance
-            .collection('connection-request')
-            .doc(senderUid)
-            .set({
-          'timestamp': Timestamp.now(),
-          'sentByUID': senderUid,
-          'sentToUID': receiverUid,
-          'connectionStatus': 'pending',
         });
 
         return Future.value('success');
@@ -66,22 +68,23 @@ class ManageConnection {
   }
 
   static Future<void> withdrawConnection(
-    String senderUid,
+    String senderUID,
+    String connectionUID,
   ) async {
     await FirebaseFirestore.instance
         .collection('connection-request')
-        .doc(senderUid)
+        .doc(connectionUID)
         .update({
       'timestamp': Timestamp.now(),
       'connectionStatus': 'withdrawn',
     });
     String receiverUid = await FirebaseFirestore.instance
         .collection('connection-request')
-        .doc(senderUid)
+        .doc(connectionUID)
         .get()
         .then((DocumentSnapshot documentSnapshot) {
       if (documentSnapshot.exists) {
-        return documentSnapshot['sentToUid'] ?? '';
+        return documentSnapshot['sentToUID'] ?? '';
       } else {
         return '';
       }
@@ -96,20 +99,24 @@ class ManageConnection {
         .doc(receiverUid)
         .update({
       'connectionState': null,
+      'connectionID': null,
       // 'connectedToUsername': username,
     });
 
-    await FirebaseFirestore.instance.collection('users').doc(senderUid).update({
+    await FirebaseFirestore.instance.collection('users').doc(senderUID).update({
       'connectionState': null,
       'connectedToUsername': null,
+      'connectionID': null,
     });
   }
 
   static Future<void> acceptConnection(
-      UserData sender, UserData reciever) async {
+    UserData sender,
+    UserData reciever,
+  ) async {
     await FirebaseFirestore.instance
         .collection('connection-request')
-        .doc(sender.uid)
+        .doc(sender.connectionID)
         .update({
       'timestamp': Timestamp.now(),
       'connectionStatus': 'accepted',
@@ -131,10 +138,12 @@ class ManageConnection {
   }
 
   static Future<void> rejectConnection(
-      UserData sender, UserData reciever) async {
+    UserData sender,
+    UserData reciever,
+  ) async {
     await FirebaseFirestore.instance
         .collection('connection-request')
-        .doc(sender.uid)
+        .doc(sender.connectionID)
         .update({
       'timestamp': Timestamp.now(),
       'connectionStatus': 'rejected',
@@ -152,6 +161,39 @@ class ManageConnection {
         .update({
       'connectionState': null,
       'connectedToUsername': null,
+    });
+  }
+
+  static Future<void> removeConnection(
+      UserData currentUser, UserData connectedUser) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('connection-request')
+          .doc(currentUser.connectionID)
+          .update({
+        'timestamp': Timestamp.now(),
+        'connectionStatus': 'removed',
+      });
+    } on Exception catch (e) {
+      // TODO
+    }
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid)
+        .update({
+      'connectionState': null,
+      'connectedToUsername': null,
+      'connectionID': null,
+    });
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(connectedUser.uid)
+        .update({
+      'connectionState': null,
+      'connectedToUsername': null,
+      'connectionID': null,
     });
   }
 }
