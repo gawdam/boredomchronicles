@@ -1,4 +1,5 @@
 // services/add_connection.dart
+import 'package:boredomapp/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ManageConnection {
@@ -35,6 +36,17 @@ class ManageConnection {
           'connectionState': 'pending_outgoing',
           'connectedToUsername': username,
         });
+
+        //Change reciever status to pending_incoming
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(receiverUid)
+            .update({
+          'connectionState': 'pending_incoming',
+          // 'connectedToUsername': username,
+        });
+
         await FirebaseFirestore.instance
             .collection('connection-request')
             .doc(senderUid)
@@ -63,7 +75,81 @@ class ManageConnection {
       'timestamp': Timestamp.now(),
       'connectionStatus': 'withdrawn',
     });
+    String receiverUid = await FirebaseFirestore.instance
+        .collection('connection-request')
+        .doc(senderUid)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        return documentSnapshot['sentToUid'] ?? '';
+      } else {
+        return '';
+      }
+    }).catchError((error) {
+      // Handle error
+      print('Error getting connection request: $error');
+      return ''; // or handle accordingly based on your requirement
+    });
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(receiverUid)
+        .update({
+      'connectionState': null,
+      // 'connectedToUsername': username,
+    });
+
     await FirebaseFirestore.instance.collection('users').doc(senderUid).update({
+      'connectionState': null,
+      'connectedToUsername': null,
+    });
+  }
+
+  static Future<void> acceptConnection(
+      UserData sender, UserData reciever) async {
+    await FirebaseFirestore.instance
+        .collection('connection-request')
+        .doc(sender.uid)
+        .update({
+      'timestamp': Timestamp.now(),
+      'connectionStatus': 'accepted',
+    });
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(sender.uid)
+        .update({
+      'connectionState': 'connected',
+      'connectedToUsername': reciever.username,
+    });
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(reciever.uid)
+        .update({
+      'connectionState': 'connected',
+      'connectedToUsername': sender.username,
+    });
+  }
+
+  static Future<void> rejectConnection(
+      UserData sender, UserData reciever) async {
+    await FirebaseFirestore.instance
+        .collection('connection-request')
+        .doc(sender.uid)
+        .update({
+      'timestamp': Timestamp.now(),
+      'connectionStatus': 'rejected',
+    });
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(sender.uid)
+        .update({
+      'connectionState': null,
+      'connectedToUsername': null,
+    });
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(reciever.uid)
+        .update({
       'connectionState': null,
       'connectedToUsername': null,
     });

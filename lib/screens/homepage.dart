@@ -110,30 +110,34 @@ class _HomePage extends State<HomePage> {
         children: [
           Align(
             alignment: Alignment.topCenter,
-            child: Card(
-              color: Theme.of(context)
-                  .colorScheme
-                  .primaryContainer
-                  .withOpacity(0.7),
-              elevation: 15,
-              margin: const EdgeInsets.all(10),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Your boredom level',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer),
-                    ),
-                    const SizedBox(height: 10),
-                    getBoredomIcon(_boredomValue)
-                    // You can add more widgets or information here
-                  ],
+            child: Container(
+              width: 250,
+              child: Card(
+                color: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer
+                    .withOpacity(0.7),
+                elevation: 15,
+                margin: const EdgeInsets.all(10),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Your boredom level',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer),
+                      ),
+                      const SizedBox(height: 10),
+                      getBoredomIcon(_boredomValue)
+                      // You can add more widgets or information here
+                    ],
+                  ),
                 ),
               ),
             ),

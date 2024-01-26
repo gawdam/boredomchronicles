@@ -1,9 +1,11 @@
 import 'package:boredomapp/models/user.dart';
 import 'package:boredomapp/providers/userprovider.dart';
+import 'package:boredomapp/services/manage_connection.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DisplayIncomingConnection extends StatelessWidget {
+class DisplayIncomingConnection extends ConsumerWidget {
   DisplayIncomingConnection({super.key, required this.currentUser});
 
   final UserData currentUser;
@@ -30,7 +32,7 @@ class DisplayIncomingConnection extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // getSenderData();
     return FutureBuilder(
       future: getSenderData(),
@@ -82,7 +84,11 @@ class DisplayIncomingConnection extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   RawMaterialButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      await ManageConnection.acceptConnection(
+                          sender!, currentUser);
+                      ref.invalidate(userProvider);
+                    },
                     child: Icon(
                       Icons.check_outlined,
                       color: Colors.black,
@@ -95,7 +101,12 @@ class DisplayIncomingConnection extends StatelessWidget {
                     width: 5,
                   ),
                   RawMaterialButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      // ref.invalidate(userProvider);
+                      await ManageConnection.rejectConnection(
+                          sender!, currentUser);
+                      ref.invalidate(userProvider);
+                    },
                     child: Text(
                       'X',
                       style: TextStyle(
