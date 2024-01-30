@@ -135,27 +135,6 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                             pointers: <GaugePointer>[
                               MarkerPointer(
                                 overlayRadius: 1,
-
-                                enableDragging: true,
-                                value: widget.value,
-                                onValueChanged: (double newValue) {
-                                  widget.onValueChanged(newValue);
-                                },
-
-                                color: const Color.fromARGB(255, 110, 110,
-                                    110), // Color of the marker pointer
-                                markerOffset:
-                                    3, // Offset to position the marker pointer
-                                markerType: MarkerType.image,
-                                imageUrl: 'assets/images/${data!.avatar}',
-
-                                markerWidth: 60,
-                                markerHeight: 60,
-                                enableAnimation: true,
-                                animationDuration: 500,
-                              ),
-                              MarkerPointer(
-                                overlayRadius: 1,
                                 enableDragging: false,
                                 value: snapshot.data!.boredomValue,
                                 color: const Color.fromARGB(255, 110, 110,
@@ -164,7 +143,28 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                                     3, // Offset to position the marker pointer
                                 markerType: MarkerType.image,
                                 imageUrl:
-                                    'assets/images/${snapshot.data!.avatar}',
+                                    'assets/images/greyscale/${snapshot.data!.avatar}',
+                                markerWidth: 60,
+                                markerHeight: 60,
+                                enableAnimation: true,
+                                animationDuration: 500,
+                              ),
+                              MarkerPointer(
+                                overlayRadius: 1,
+
+                                enableDragging: true,
+                                value: widget.value,
+                                onValueChanged: (double newValue) {
+                                  widget.onValueChanged(newValue);
+                                },
+
+                                color: Color.fromARGB(255, 255, 0,
+                                    0), // Color of the marker pointer
+                                markerOffset:
+                                    3, // Offset to position the marker pointer
+                                markerType: MarkerType.image,
+                                imageUrl: 'assets/images/${data.avatar}',
+
                                 markerWidth: 60,
                                 markerHeight: 60,
                                 enableAnimation: true,
@@ -205,7 +205,7 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                                 markerOffset:
                                     3, // Offset to position the marker pointer
                                 markerType: MarkerType.image,
-                                imageUrl: 'assets/images/${data!.avatar}',
+                                imageUrl: 'assets/images/${data.avatar}',
 
                                 markerWidth: 60,
                                 markerHeight: 60,

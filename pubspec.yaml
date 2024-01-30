@@ -102,6 +102,8 @@ flutter:
     - assets/images/sprite_0.png
     - assets/images/sprite_1.png
     - assets/images/add_friend.png
+    - assets/images/greyscale/man.png
+    - assets/images/greyscale/woman.png
 
 
   # 

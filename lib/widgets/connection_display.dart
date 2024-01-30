@@ -18,10 +18,12 @@ class ConnectedUser extends ConsumerWidget {
         .collection('connection-request')
         .doc(currentUser.connectionID)
         .get();
+    print(connection);
 
     Timestamp connectionTimestamp = connection.data()!['timestamp'];
     connectedFor =
         DateTime.now().difference(connectionTimestamp.toDate()).inDays;
+    print(connectedFor);
     return await getConnection(currentUser);
   }
 
