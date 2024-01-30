@@ -37,6 +37,8 @@ class ManageConnection {
       if (connectionState == 'pending_outgoing' ||
           connectionState == 'connected') {
         return Future.error('error-user-taken');
+      } else if (receiverUid == senderUid) {
+        return Future.error('error-same-user');
       } else {
         // Send connection request
         await FirebaseFirestore.instance
@@ -154,6 +156,7 @@ class ManageConnection {
         .update({
       'connectionState': null,
       'connectedToUsername': null,
+      'connectionID': null,
     });
     await FirebaseFirestore.instance
         .collection('users')
@@ -161,6 +164,7 @@ class ManageConnection {
         .update({
       'connectionState': null,
       'connectedToUsername': null,
+      'connectionID': null,
     });
   }
 

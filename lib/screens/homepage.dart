@@ -46,7 +46,6 @@ class _HomePage extends State<HomePage> {
       setState(() {
         // Reduce boredom by 100 units
         _loadBoredomValue();
-
         _boredomValue = (_boredomValue - 0.416666666);
         setBoredomValue(_boredomValue);
       });

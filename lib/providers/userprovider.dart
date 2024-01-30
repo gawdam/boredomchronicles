@@ -47,3 +47,22 @@ Future<void> saveUserDataToCloud(UserData user) async {
     // Handle the error as needed
   }
 }
+
+Future<UserData?> getConnection(UserData userData) async {
+  if (userData.connectedToUsername != null) {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('username', isEqualTo: userData.connectedToUsername)
+        .limit(1)
+        .get();
+
+    var connectionID = querySnapshot.docs.first['uid'];
+    return await getUserData(connectionID);
+  } else {
+    return null;
+  }
+
+  // sender = await getUserData(connectionID);
+
+  // return null;
+}

@@ -11,21 +11,18 @@ class ConnectedUser extends ConsumerWidget {
 
   UserData? connectedUser;
   UserData currentUser;
-  int? connectedFor;
+  int connectedFor = 0;
 
   Future<UserData?> getSenderData() async {
-    String SenderUid;
     final connection = await FirebaseFirestore.instance
         .collection('connection-request')
         .doc(currentUser.connectionID)
         .get();
 
-    SenderUid = connection.data()!['sentByUID'];
     Timestamp connectionTimestamp = connection.data()!['timestamp'];
     connectedFor =
         DateTime.now().difference(connectionTimestamp.toDate()).inDays;
-    print(SenderUid);
-    return await getUserData(SenderUid);
+    return await getConnection(currentUser);
   }
 
   @override
@@ -61,7 +58,7 @@ class ConnectedUser extends ConsumerWidget {
                             ),
                             SizedBox(height: 8),
                             Text(
-                              snapshot.data!.username,
+                              snapshot.data!.username!,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,

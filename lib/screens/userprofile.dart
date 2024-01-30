@@ -91,7 +91,9 @@ class UserProfileScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 RichText(
                   text: TextSpan(
-                    text: 'Connected to: ',
+                    text: user.connectedToUsername == null
+                        ? 'No connection'
+                        : 'Connected to: ',
                     style: TextStyle(fontFamily: 'PixelifySans', fontSize: 15),
                     children: <TextSpan>[
                       TextSpan(
