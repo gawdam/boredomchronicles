@@ -22,16 +22,6 @@ class ManageConnection {
 
       // Check the connectionStatus field
       String? connectionState = userDoc['connectionState'];
-      final reference = await FirebaseFirestore.instance
-          .collection('connection-request')
-          .doc();
-      final connectionID = reference.id;
-      reference.set({
-        'timestamp': Timestamp.now(),
-        'sentByUID': senderUid,
-        'sentToUID': receiverUid,
-        'connectionStatus': 'pending',
-      });
 
       // Return false if the connectionStatus is 'pending-outgoing' or 'connected'
       if (connectionState == 'pending_outgoing' ||
@@ -40,6 +30,16 @@ class ManageConnection {
       } else if (receiverUid == senderUid) {
         return Future.error('error-same-user');
       } else {
+        final reference = await FirebaseFirestore.instance
+            .collection('connection-request')
+            .doc();
+        final connectionID = reference.id;
+        reference.set({
+          'timestamp': Timestamp.now(),
+          'sentByUID': senderUid,
+          'sentToUID': receiverUid,
+          'connectionStatus': 'pending',
+        });
         // Send connection request
         await FirebaseFirestore.instance
             .collection('users')

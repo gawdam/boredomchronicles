@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AvatarSelectionScreen extends StatefulWidget {
+class AvatarSelectionScreen extends ConsumerStatefulWidget {
   final String initialSelection;
   final Function(String) onAvatarSelected;
 
@@ -14,7 +15,7 @@ class AvatarSelectionScreen extends StatefulWidget {
   _AvatarSelectionScreenState createState() => _AvatarSelectionScreenState();
 }
 
-class _AvatarSelectionScreenState extends State<AvatarSelectionScreen> {
+class _AvatarSelectionScreenState extends ConsumerState<AvatarSelectionScreen> {
   late String selectedAvatar;
 
   @override
@@ -71,10 +72,5 @@ class _AvatarSelectionScreenState extends State<AvatarSelectionScreen> {
         ),
       ),
     );
-  }
-
-  // Function to return the selected avatar
-  String getSelectedAvatar() {
-    return selectedAvatar;
   }
 }

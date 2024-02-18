@@ -244,13 +244,13 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
         .update({'avatar': selectedAvatar});
 
     ref.invalidate(userProvider);
-    final user = ref.watch(userProvider);
-    user.when(
-      data: (data) {
-        userData = data!;
-      },
-      error: (error, _) {},
-      loading: () {},
-    );
+    // final user = ref.watch(userProvider);
+    // user.when(
+    //   data: (data) {
+    //     userData = data!;
+    //   },
+    //   error: (error, _) {},
+    //   loading: () {},
+    // );
   }
 }

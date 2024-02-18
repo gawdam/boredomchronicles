@@ -18,6 +18,7 @@ class DatabaseService {
       await db.execute('''
         CREATE TABLE $tableName(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
+          uid STRING,
           timestamp TEXT,
           value INTEGER
         )
@@ -27,29 +28,16 @@ class DatabaseService {
 
   Future<int> insertBoredomData(UserHistory data) async {
     final db = await database;
+    await db.rawQuery(
+        "DELETE from $tableName where julianday(current_date)-julianday(timestamp)>365");
     return db.insert(tableName, data.toMap());
   }
 
-  Future<List<UserHistory>> getBoredomDataForDateAndHour(
-      DateTime date, int hour) async {
+  Future<double> getBoredomHistoryData(int timeframe) async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      tableName,
-      where: 'timestamp LIKE ?',
-      whereArgs: ['${_formatDate(date)} $hour%'],
-    );
-
-    return List.generate(maps.length, (i) {
-      return UserHistory(
-        uid: maps[i]['id'],
-        timestamp: DateTime.parse(maps[i]['timestamp']),
-        value: maps[i]['value'],
-      );
-    });
-  }
-
-  // Function to format the date to 'yyyy-MM-dd'
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    List<Map<String, dynamic>> maps = await db.rawQuery(
+        "SELECT sum(value)/count(*) as value from $tableName where julianday(current_date)-julianday(timestamp)<$timeframe ");
+    // "SELECT sum(value)/count(*) as value from $tableName where julianday(current_date)-julianday(timestamp)<$timeframe ");
+    return maps.first['value'];
   }
 }

@@ -1,11 +1,16 @@
 import 'dart:io';
 import 'package:boredomapp/models/user.dart';
 import 'package:boredomapp/providers/userprovider.dart';
+import 'package:boredomapp/screens/homepage.dart';
+import 'package:boredomapp/services/database_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:boredomapp/widgets/user_image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
+
+final DatabaseService databaseService = DatabaseService();
 
 // ignore: must_be_immutable
 class UserProfileScreen extends StatelessWidget {
@@ -49,6 +54,14 @@ class UserProfileScreen extends StatelessWidget {
       print('Error uploading image to Firebase Storage: $e');
       return null;
     }
+  }
+
+  Future<Iterable<String>> getIconfromTimeframe(List<int> timeframe) async {
+    final db = databaseService;
+    final boredomValue = await Future.wait(
+        timeframe.map((e) async => await db.getBoredomHistoryData(e)));
+    print(boredomValue);
+    return boredomValue.map((e) => getBoredomIcon(e));
   }
 
   @override
@@ -110,10 +123,26 @@ class UserProfileScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                buildMoodSection('Today', '😊'),
-                buildMoodSection('This Week', '😐'),
-                buildMoodSection('This Month', '😔'),
-                buildMoodSection('This Year', '😃'),
+                FutureBuilder(
+                    future: getIconfromTimeframe([1, 7, 30, 365]),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != 'loading' &&
+                          snapshot.hasData) {
+                        return Column(
+                          children: [
+                            buildMoodSection(
+                                'Today', snapshot.data!.elementAt(0)),
+                            buildMoodSection(
+                                'This Week', snapshot.data!.elementAt(1)),
+                            buildMoodSection(
+                                'This Month', snapshot.data!.elementAt(2)),
+                            buildMoodSection(
+                                'This Year', snapshot.data!.elementAt(3)),
+                          ],
+                        );
+                      }
+                      return CircularProgressIndicator();
+                    })
               ],
             ),
           ),
