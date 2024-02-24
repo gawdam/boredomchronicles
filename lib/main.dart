@@ -33,26 +33,19 @@ Future<void> storeDataInDatabase(uid, boredomValue) async {
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    await Firebase.initializeApp();
+    var boredomValue = inputData!['boredomValue'];
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    double boredomValue = prefs.getDouble('boredomValue') ?? 0;
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      switch (task) {
-        case "storeValues":
-          await storeDataInDatabase(user.uid, boredomValue);
 
-        case "boredomTicker":
-          boredomValue = (boredomValue - 6.25).clamp(0.0, 100.0);
-          prefs.setDouble('boredomValue', boredomValue);
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user!.uid)
-              .update({
-            'boredomValue': boredomValue,
-            'updateTimestamp': Timestamp.now()
-          });
-      }
+    switch (task) {
+      case "storeValues":
+        final userID = inputData['userID'];
+        await storeDataInDatabase(userID, boredomValue);
+        await FirebaseFirestore.instance.collection('users').doc(userID).update(
+            {'boredomValue': boredomValue, 'updateTimestamp': Timestamp.now()});
+
+      case "boredomTicker":
+        boredomValue = (boredomValue - 6.25).clamp(0.0, 99.9);
+        prefs.setDouble('boredomValue', boredomValue);
     }
     //simpleTask will be emitted here.
     return Future.value(true);
@@ -69,26 +62,34 @@ void main() async {
           true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
       );
 
-  Workmanager().registerPeriodicTask(
-    "boredomTicker",
-    "boredomTicker",
-    frequency: const Duration(minutes: 15),
-  );
-
-  Workmanager().registerPeriodicTask(
-    "storeValues",
-    "storeValues",
-    frequency: const Duration(minutes: 60),
-    // inputData: {
-    //   'boredomValue': boredomValue,
-    // },
-  );
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  await NotificationManager().initNotifications();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  double boredomValue = prefs.getDouble('boredomValue') ?? 0;
+  final user = FirebaseAuth.instance.currentUser;
+  Workmanager().registerPeriodicTask(
+    "boredomTicker",
+    "boredomTicker",
+    frequency: const Duration(minutes: 15),
+    inputData: {
+      'boredomValue': boredomValue,
+    },
+  );
+
+  if (user != null) {
+    Workmanager().registerPeriodicTask(
+      "storeValues",
+      "storeValues",
+      frequency: const Duration(minutes: 60),
+      inputData: {
+        'boredomValue': boredomValue,
+        'userID': user.uid,
+      },
+    );
+  }
+
   final themeStr =
       await rootBundle.loadString('assets/themes/base_theme_3.json');
   final themeJson = jsonDecode(themeStr);

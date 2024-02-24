@@ -57,7 +57,6 @@ class _BoredomButtonState extends State<BoredomButton> {
         setState(() {
           isPressed = false;
         });
-        print('cancel');
         timer?.cancel();
       },
       child: Image.asset(

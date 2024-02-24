@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/screens/sidedrawer.dart';
+import 'package:boredomapp/services/debouncer.dart';
+import 'package:boredomapp/services/notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,14 +35,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePage extends State<HomePage> {
-  final user = FirebaseAuth.instance.currentUser!;
-  late double _boredomValue = 0;
+  final user = FirebaseAuth.instance.currentUser;
+  late double _boredomValue = 50;
   late Timer _timer;
+  final notificationManager = NotificationManager();
 
   @override
   void initState() {
     super.initState();
+
     _loadBoredomValue();
+    _storeNotificationToken();
 
     // Set up a timer to reduce boredom every 1 minute
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
@@ -59,11 +65,86 @@ class _HomePage extends State<HomePage> {
     super.dispose();
   }
 
+  Future<void> _storeNotificationToken() async {
+    await notificationManager.initNotifications();
+    await notificationManager.storeToken(user!.uid);
+  }
+
+  Future<void> _onMaxBoredom(connectionUID) async {
+    await _sendNotification(connectionUID);
+  }
+
+  Future<void> _sendNotification(connectionUID) async {
+    await FirebaseFirestore.instance
+        .collection('tokens')
+        .doc(connectionUID)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) async {
+      if (documentSnapshot.exists) {
+        if (!(documentSnapshot.data() as Map<String, dynamic>)
+            .containsKey('timestamp')) {
+          await notificationManager.sendNotification(documentSnapshot['token']);
+          await FirebaseFirestore.instance
+              .collection('tokens')
+              .doc(connectionUID)
+              .update({'timestamp': Timestamp.now()});
+        } else if (DateTime.now()
+                .difference(documentSnapshot['timestamp'].toDate())
+                .inHours >
+            1) {
+          await notificationManager.sendNotification(documentSnapshot['token']);
+          await FirebaseFirestore.instance
+              .collection('tokens')
+              .doc(connectionUID)
+              .update({'timestamp': Timestamp.now()});
+        }
+      } else {
+        return '';
+      }
+    }).catchError((error) {
+      // Handle error
+      print('Error getting token request: $error');
+      return ''; // or handle accordingly based on your requirement
+    });
+  }
+
   Future<void> _saveBoredomValue(boredomValue) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setDouble('boredomValue', boredomValue);
-    await FirebaseFirestore.instance.collection('users').doc(user.uid).update(
-        {'boredomValue': _boredomValue, 'updateTimestamp': Timestamp.now()});
+  }
+
+  Future<void> _saveBoredomValueToCloud(boredomValue) async {
+    await FirebaseFirestore.instance.collection('users').doc(user!.uid).update(
+        {'boredomValue': boredomValue, 'updateTimestamp': Timestamp.now()});
+    if (boredomValue! >= 100.0) {
+      print('peaked');
+      String connectionUID = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .get()
+          .then((DocumentSnapshot documentSnapshot) {
+        if (documentSnapshot.exists) {
+          return documentSnapshot['connectionID'] ?? '';
+        } else {
+          return '';
+        }
+      });
+      ;
+      String connectedtoUID = await FirebaseFirestore.instance
+          .collection('connection-request')
+          .doc(connectionUID)
+          .get()
+          .then((DocumentSnapshot documentSnapshot) {
+        if (documentSnapshot.exists) {
+          return documentSnapshot['sentToUID'] ?? '';
+        } else {
+          return '';
+        }
+      });
+
+      await _sendNotification(connectedtoUID);
+      await setBoredomValue(99.9);
+    }
   }
 
   Future<void> _loadBoredomValue() async {
@@ -71,14 +152,20 @@ class _HomePage extends State<HomePage> {
     setState(() {
       // Load boredom value from shared preferences
       _boredomValue = prefs.getDouble('boredomValue') ?? 50;
+      print(_boredomValue);
     });
   }
   // Initial value
 
-  void setBoredomValue(value) {
+  Future<void> setBoredomValue(double? boredomValue) async {
     setState(() {
-      _boredomValue = (value).clamp(0.0, 100.0);
+      _boredomValue = (boredomValue ?? 50).clamp(0.0, 100.0);
       _saveBoredomValue(_boredomValue);
+    });
+    _timer.cancel();
+    _timer = Timer(const Duration(seconds: 5), () {
+      _saveBoredomValueToCloud(_boredomValue);
+      boredomValue = null;
     });
   }
 
@@ -148,6 +235,7 @@ class _HomePage extends State<HomePage> {
           BoredomGauge(
             value: _boredomValue,
             onValueChanged: setBoredomValue,
+            onMaxBoredom: (s) {},
           ),
           const SizedBox(height: 20),
           BoredomButton(
