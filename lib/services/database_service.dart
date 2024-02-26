@@ -19,8 +19,8 @@ class DatabaseService {
         CREATE TABLE $tableName(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           uid STRING,
-          timestamp TEXT,
-          value INTEGER
+          timestamp STRING,
+          value FLOAT
         )
       ''');
     });
@@ -35,9 +35,12 @@ class DatabaseService {
 
   Future<double> getBoredomHistoryData(int timeframe) async {
     final db = await database;
+    final value = await db.rawQuery(
+        "SELECT sum(value)/count(*) as value from $tableName where julianday(current_date)-julianday(timestamp)<$timeframe");
+    print(value.first['value']);
     List<Map<String, dynamic>> maps = await db.rawQuery(
         "SELECT sum(value)/count(*) as value from $tableName where julianday(current_date)-julianday(timestamp)<$timeframe ");
     // "SELECT sum(value)/count(*) as value from $tableName where julianday(current_date)-julianday(timestamp)<$timeframe ");
-    return maps.first['value'];
+    return maps.first['value'].toDouble();
   }
 }

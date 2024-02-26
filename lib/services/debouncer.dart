@@ -4,7 +4,7 @@ class ValueMonitor {
   late final Duration debounceDuration;
   late final Function(double) onChange;
   Timer? _timer;
-  dynamic? _lastValue;
+  dynamic _lastValue;
 
   ValueMonitor(this.debounceDuration, this.onChange);
 

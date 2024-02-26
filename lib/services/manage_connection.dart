@@ -30,7 +30,7 @@ class ManageConnection {
       } else if (receiverUid == senderUid) {
         return Future.error('error-same-user');
       } else {
-        final reference = await FirebaseFirestore.instance
+        final reference = FirebaseFirestore.instance
             .collection('connection-request')
             .doc();
         final connectionID = reference.id;
@@ -137,6 +137,42 @@ class ManageConnection {
       'connectionState': 'connected',
       'connectedToUsername': sender.username,
     });
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(reciever.uid)
+        .update({
+      'connectionState': 'connected',
+      'connectedToUsername': sender.username,
+    });
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(reciever.uid)
+        .update({
+      'connectionState': 'connected',
+      'connectedToUsername': sender.username,
+    });
+
+    await FirebaseFirestore.instance
+        .collection('tokens')
+        .doc(reciever.uid)
+        .update({
+      'incoming': true,
+      'outgoing': true,
+      'notificationTitle': "Max boredom alert!",
+      'notificationBody':
+          "${sender.username} needs some entertainment. It's time to send them some memes.",
+    });
+
+    await FirebaseFirestore.instance
+        .collection('tokens')
+        .doc(sender.uid)
+        .update({
+      'incoming': true,
+      'outgoing': true,
+      'notificationTitle': "Max boredom alert!",
+      'notificationBody':
+          "${reciever.username} needs some entertainment. It's time to send them some memes.",
+    });
   }
 
   static Future<void> rejectConnection(
@@ -178,7 +214,7 @@ class ManageConnection {
         'timestamp': Timestamp.now(),
         'connectionStatus': 'removed',
       });
-    } on Exception catch (e) {
+    } on Exception {
       // TODO
     }
 

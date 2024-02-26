@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class WithdrawConnectionRequest extends ConsumerWidget {
-  WithdrawConnectionRequest({Key? key, required this.userData})
+  const WithdrawConnectionRequest({Key? key, required this.userData})
       : super(key: key);
 
   final UserData userData;
@@ -33,7 +33,7 @@ class WithdrawConnectionRequest extends ConsumerWidget {
             ],
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: 10,
         ),
         ElevatedButton(

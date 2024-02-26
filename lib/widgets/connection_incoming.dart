@@ -38,7 +38,7 @@ class DisplayIncomingConnection extends ConsumerWidget {
       future: getSenderData(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         } else if (snapshot.hasError)
           return Text('Error:${snapshot.error}');
         else {
@@ -65,7 +65,7 @@ class DisplayIncomingConnection extends ConsumerWidget {
                         backgroundColor:
                             Theme.of(context).colorScheme.background,
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         sender!.username,
                         style: TextStyle(
@@ -78,7 +78,7 @@ class DisplayIncomingConnection extends ConsumerWidget {
                   ),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               Row(
@@ -90,15 +90,15 @@ class DisplayIncomingConnection extends ConsumerWidget {
                           sender!, currentUser);
                       ref.invalidate(userProvider);
                     },
-                    child: Icon(
+                    shape: const CircleBorder(),
+                    elevation: 2,
+                    fillColor: Theme.of(context).colorScheme.primaryContainer,
+                    child: const Icon(
                       Icons.check_outlined,
                       color: Colors.black,
                     ),
-                    shape: CircleBorder(),
-                    elevation: 2,
-                    fillColor: Theme.of(context).colorScheme.primaryContainer,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 5,
                   ),
                   RawMaterialButton(
@@ -108,7 +108,10 @@ class DisplayIncomingConnection extends ConsumerWidget {
                           sender!, currentUser);
                       ref.invalidate(userProvider);
                     },
-                    child: Text(
+                    shape: const CircleBorder(),
+                    elevation: 2,
+                    fillColor: Theme.of(context).colorScheme.primaryContainer,
+                    child: const Text(
                       'X',
                       style: TextStyle(
                           color: Colors.black,
@@ -116,9 +119,6 @@ class DisplayIncomingConnection extends ConsumerWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.w400),
                     ),
-                    shape: CircleBorder(),
-                    elevation: 2,
-                    fillColor: Theme.of(context).colorScheme.primaryContainer,
                   ),
                 ],
               )

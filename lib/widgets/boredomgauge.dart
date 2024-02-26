@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:flutter/material.dart';
@@ -7,13 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BoredomGauge extends ConsumerStatefulWidget {
   final double? value; // Value to be represented on the gauge
-  final ValueChanged<double?> onValueChanged;
-  final ValueChanged<String?> onMaxBoredom;
+  final ValueChanged<double?>? onValueChanged;
   const BoredomGauge({
     super.key,
     required this.value,
     required this.onValueChanged,
-    required this.onMaxBoredom,
   });
 
   @override
@@ -107,7 +104,7 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
     final user = ref.watch(userProvider);
     return user.when(data: (data) {
       if (data == null) {
-        return CircularProgressIndicator();
+        return const CircularProgressIndicator();
       }
       return ClipRect(
         child: Align(
@@ -119,12 +116,9 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                 future: getConnection(data),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == 'Loading') {
-                    return Column();
+                    return const Column();
                   }
                   if (snapshot.hasData && snapshot.data != null) {
-                    if ((widget.value ?? 50) >= 100.0) {
-                      widget.onMaxBoredom(snapshot.data!.uid);
-                    }
                     return SfRadialGauge(
                       backgroundColor: Colors.transparent,
                       axes: <RadialAxis>[
@@ -145,14 +139,14 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                               MarkerPointer(
                                 overlayRadius: 1,
                                 enableDragging: false,
-                                value: snapshot.data!.boredomValue ?? 50,
+                                value: snapshot.data?.boredomValue ?? 50,
                                 color: const Color.fromARGB(255, 110, 110,
                                     110), // Color of the marker pointer
                                 markerOffset:
                                     3, // Offset to position the marker pointer
                                 markerType: MarkerType.image,
                                 imageUrl:
-                                    'assets/images/greyscale/${snapshot.data!.avatar}',
+                                    'assets/images/greyscale/${snapshot.data?.avatar}',
                                 markerWidth: 60,
                                 markerHeight: 60,
                                 enableAnimation: true,
@@ -164,10 +158,12 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                                 enableDragging: true,
                                 value: widget.value ?? 50,
                                 onValueChanged: (double newValue) {
-                                  widget.onValueChanged(newValue);
+                                  if (widget.onValueChanged != null) {
+                                    widget.onValueChanged!(newValue);
+                                  }
                                 },
 
-                                color: Color.fromARGB(255, 255, 0,
+                                color: const Color.fromARGB(255, 255, 0,
                                     0), // Color of the marker pointer
                                 markerOffset:
                                     3, // Offset to position the marker pointer
@@ -206,7 +202,9 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                                 enableDragging: true,
                                 value: widget.value ?? 50,
                                 onValueChanged: (double? newValue) {
-                                  widget.onValueChanged(newValue);
+                                  if (widget.onValueChanged != null) {
+                                    widget.onValueChanged!(newValue);
+                                  }
                                 },
 
                                 color: const Color.fromARGB(255, 110, 110,

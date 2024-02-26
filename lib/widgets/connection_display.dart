@@ -33,7 +33,7 @@ class ConnectedUser extends ConsumerWidget {
         future: getSenderData(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           } else if (snapshot.hasError)
             return Text('Error:${snapshot.error}');
           else {
@@ -41,7 +41,7 @@ class ConnectedUser extends ConsumerWidget {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
+                  SizedBox(
                     width: 200,
                     height: 200,
                     child: Card(
@@ -58,31 +58,31 @@ class ConnectedUser extends ConsumerWidget {
                               backgroundColor:
                                   Theme.of(context).colorScheme.background,
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
-                              snapshot.data!.username!,
+                              snapshot.data!.username,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.secondary,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               "Connected for ${(connectedFor.toString())} days",
                               style: const TextStyle(fontSize: 11),
                             ),
-                            SizedBox(height: 12),
+                            const SizedBox(height: 12),
                             Text(
                               getBoredomIcon(snapshot.data!.boredomValue),
-                              style: TextStyle(fontSize: 30),
+                              style: const TextStyle(fontSize: 30),
                             )
                           ],
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
                   ElevatedButton(
@@ -93,14 +93,14 @@ class ConnectedUser extends ConsumerWidget {
                             currentUser, snapshot.data!);
                         ref.invalidate(userProvider);
                       },
-                      child: Text(
+                      child: const Text(
                         'Remove connection',
                         style: TextStyle(fontSize: 10, color: Colors.white),
                       ))
                 ],
               );
             } else {
-              return CircularProgressIndicator();
+              return const CircularProgressIndicator();
             }
           }
         });

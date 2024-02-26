@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:boredomapp/widgets/user_image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
 
 final DatabaseService databaseService = DatabaseService();
 
@@ -56,12 +55,23 @@ class UserProfileScreen extends StatelessWidget {
     }
   }
 
-  Future<Iterable<String>> getIconfromTimeframe(List<int> timeframe) async {
+  Future<List<String>> getIconfromTimeframe(List<int> timeframe) async {
     final db = databaseService;
-    final boredomValue = await Future.wait(
-        timeframe.map((e) async => await db.getBoredomHistoryData(e)));
-    print(boredomValue);
-    return boredomValue.map((e) => getBoredomIcon(e));
+
+    try {
+      final boredomValues = await Future.wait(timeframe.map((e) async {
+        final value = await db.getBoredomHistoryData(e);
+        return value.toDouble();
+      }));
+
+      // Logging the fetched boredom values
+      print("Fetched boredom values: $boredomValues");
+
+      return boredomValues.map((e) => getBoredomIcon(e)).toList();
+    } catch (e) {
+      print("Error fetching boredom values: $e");
+      return []; // Return an empty list or handle the error accordingly
+    }
   }
 
   @override
@@ -86,10 +96,10 @@ class UserProfileScreen extends StatelessWidget {
               children: [
                 UserImagePicker(
                   imagePath: imagePath,
-                  onImageSelected: (File? selectedImage) {
+                  onImageSelected: (File? selectedImage) async {
                     if (selectedImage != null) {
                       uploadImageToCloud(selectedImage, user.uid);
-                      saveImageLocally(selectedImage);
+                      await saveImageLocally(selectedImage);
                     }
                   },
                 ),
@@ -107,7 +117,7 @@ class UserProfileScreen extends StatelessWidget {
                     text: user.connectedToUsername == null
                         ? 'No connection'
                         : 'Connected to: ',
-                    style: TextStyle(fontFamily: 'PixelifySans', fontSize: 15),
+                    style: const TextStyle(fontFamily: 'PixelifySans', fontSize: 15),
                     children: <TextSpan>[
                       TextSpan(
                         text: user.connectedToUsername,
@@ -141,7 +151,7 @@ class UserProfileScreen extends StatelessWidget {
                           ],
                         );
                       }
-                      return CircularProgressIndicator();
+                      return const CircularProgressIndicator();
                     })
               ],
             ),

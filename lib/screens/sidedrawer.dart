@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/screens/avatar.dart';
 import 'package:boredomapp/screens/connection.dart';
+import 'package:boredomapp/screens/notifications.dart';
 import 'package:boredomapp/screens/userprofile.dart';
 import 'package:boredomapp/services/logout_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,6 +13,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user.dart';
+
+Future<void> clearPreferences() async {
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  await preferences.clear();
+}
 
 class SideDrawer extends ConsumerStatefulWidget {
   const SideDrawer({super.key});
@@ -105,80 +111,78 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
     );
   }
 
+  Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
+    Navigator.of(context).pop(); // Close the drawer
+    final user = ref.refresh(userProvider);
+
+    return user.when(
+      error: (error, _) => Text('Please login again. $error'),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      data: (data) {
+        bool isLoggingOut =
+            false; // Track whether the user is currently logging out
+
+        return showDialog(
+          context: context,
+          barrierDismissible: false, // Prevent dismissing during logout
+          builder: (BuildContext context) {
+            return WillPopScope(
+              onWillPop: () async => false, // Disable back button during logout
+              child: AlertDialog(
+                title: const Text('Are you sure?'),
+                content: const Text('''Your account & data will be deleted.'''),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: isLoggingOut
+                        ? null // Disable the "No" button when logging out
+                        : () {
+                            Navigator.of(context).pop(); // Close the dialog
+                          },
+                    child: const Text('No'),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      try {
+                        // Set the flag to indicate that the user is logging out
+                        isLoggingOut = true;
+
+                        // Update the dialog to show a circular progress indicator
+
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                        );
+
+                        // Logout service
+                        Navigator.of(context).pop();
+
+                        await _logoutService.logout(context, data!);
+                        print('LoggedOut!');
+                      } catch (e) {
+                        print('Error during re-authentication: $e');
+                        // Handle re-authentication error, e.g., show a message to the user
+                      }
+                    },
+                    child: isLoggingOut
+                        ? const CircularProgressIndicator() // Show a progress indicator instead of "Yes"
+                        : const Text('Delete my account'),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
-      Navigator.of(context).pop(); // Close the drawer
-      final user = ref.refresh(userProvider);
-
-      return user.when(
-        error: (error, _) => Text('Please login again. $error'),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        data: (data) {
-          bool isLoggingOut =
-              false; // Track whether the user is currently logging out
-
-          return showDialog(
-            context: context,
-            barrierDismissible: false, // Prevent dismissing during logout
-            builder: (BuildContext context) {
-              return WillPopScope(
-                onWillPop: () async =>
-                    false, // Disable back button during logout
-                child: AlertDialog(
-                  title: const Text('Are you sure?'),
-                  content:
-                      const Text('''Your account & data will be deleted.'''),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: isLoggingOut
-                          ? null // Disable the "No" button when logging out
-                          : () {
-                              Navigator.of(context).pop(); // Close the dialog
-                            },
-                      child: const Text('No'),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        try {
-                          // Set the flag to indicate that the user is logging out
-                          isLoggingOut = true;
-
-                          // Update the dialog to show a circular progress indicator
-
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (BuildContext context) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            },
-                          );
-
-                          // Logout service
-                          Navigator.of(context).pop();
-
-                          await _logoutService.logout(context, data!);
-                          print('LoggedOut!');
-                        } catch (e) {
-                          print('Error during re-authentication: $e');
-                          // Handle re-authentication error, e.g., show a message to the user
-                        }
-                      },
-                      child: isLoggingOut
-                          ? const CircularProgressIndicator() // Show a progress indicator instead of "Yes"
-                          : const Text('Delete my account'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      );
-    }
-
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -212,24 +216,30 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ConnectionsScreen()),
+                MaterialPageRoute(builder: (context) => const ConnectionsScreen()),
               );
             },
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
+            leading: const Icon(Icons.notifications),
+            title: const Text('Notifications'),
             onTap: () {
-              // Handle the Settings tap
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        NotificationsScreen(userData: userData)),
+              );
             },
           ),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
-            onTap: () {
+            onTap: () async {
               // Show logout confirmation dialog
               _showLogoutConfirmationDialog(context);
+              await clearPreferences();
             },
           ),
         ],

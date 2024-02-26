@@ -18,20 +18,20 @@ class _RequestConnectionWidgetState extends ConsumerState<RequestConnection> {
   String _connectionAttempt = 'no-connection-attempt';
 
   void showConnectionResultDialog(
-      BuildContext context, String _connectionAttempt) {
+      BuildContext context, String connectionAttempt) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        if (_connectionAttempt.contains('error')) {
+        if (connectionAttempt.contains('error')) {
           // Display error message for 'error-no-user'
           return AlertDialog(
             title: const Text('Connection Error'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(_connectionAttempt == 'error-no-user'
+                Text(connectionAttempt == 'error-no-user'
                     ? 'The username does not exist!'
-                    : _connectionAttempt == 'error-user-taken'
+                    : connectionAttempt == 'error-user-taken'
                         ? 'This username is already taken!'
                         : "Silly goose. That's YOUR username!"),
                 const SizedBox(height: 16),

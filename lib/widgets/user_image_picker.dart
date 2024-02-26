@@ -50,6 +50,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
                     if (widget.imagePath == null) {
                       return File(widget.imagePath!);
                     }
+                    return null;
                   });
 
                   await widget.onImageSelected(pickedImage);
@@ -74,6 +75,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
                     if (widget.imagePath == null) {
                       return File(widget.imagePath!);
                     }
+                    return null;
                   });
 
                   await widget.onImageSelected(pickedImage);
@@ -106,7 +108,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
               child: _stockImage
                   ? CircleAvatar(
                       radius: 55,
-                      backgroundImage: AssetImage('assets/images/sloth.png'),
+                      backgroundImage: const AssetImage('assets/images/sloth.png'),
                       backgroundColor: Theme.of(context).canvasColor,
                     )
                   : CircleAvatar(

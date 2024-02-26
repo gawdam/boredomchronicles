@@ -5,7 +5,6 @@ import 'package:boredomapp/screens/auth.dart';
 import 'package:boredomapp/screens/homepage.dart';
 import 'package:boredomapp/screens/splash.dart';
 import 'package:boredomapp/services/database_service.dart';
-import 'package:boredomapp/services/notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,13 +17,11 @@ import 'package:workmanager/workmanager.dart';
 
 import 'models/user_history.dart';
 
-final DatabaseService databaseService = DatabaseService();
+final DatabaseService db = DatabaseService();
 
 Future<void> storeDataInDatabase(uid, boredomValue) async {
-  final db = databaseService;
-
   final now = DateTime.now();
-
+  debugPrint("Checkpoint 3");
   final data = UserHistory(uid: uid, timestamp: now, value: boredomValue);
   await db.insertBoredomData(data);
 }
@@ -33,16 +30,26 @@ Future<void> storeDataInDatabase(uid, boredomValue) async {
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    var boredomValue = inputData!['boredomValue'];
+    debugPrint("Checkpoint 1");
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    double boredomValue = prefs.getDouble('boredomValue') ?? 0;
+    await Firebase.initializeApp();
 
     switch (task) {
       case "storeValues":
-        final userID = inputData['userID'];
-        await storeDataInDatabase(userID, boredomValue);
-        await FirebaseFirestore.instance.collection('users').doc(userID).update(
-            {'boredomValue': boredomValue, 'updateTimestamp': Timestamp.now()});
-
+        if (inputData != null) {
+          final userID = inputData['userID'];
+          debugPrint("Checkpoint 2");
+          await storeDataInDatabase(userID, boredomValue);
+          debugPrint("Checkpoint 4");
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userID)
+              .update({
+            'boredomValue': boredomValue,
+            'updateTimestamp': Timestamp.now()
+          });
+        }
       case "boredomTicker":
         boredomValue = (boredomValue - 6.25).clamp(0.0, 99.9);
         prefs.setDouble('boredomValue', boredomValue);
@@ -66,29 +73,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  double boredomValue = prefs.getDouble('boredomValue') ?? 0;
-  final user = FirebaseAuth.instance.currentUser;
   Workmanager().registerPeriodicTask(
     "boredomTicker",
     "boredomTicker",
     frequency: const Duration(minutes: 15),
-    inputData: {
-      'boredomValue': boredomValue,
-    },
   );
-
-  if (user != null) {
-    Workmanager().registerPeriodicTask(
-      "storeValues",
-      "storeValues",
-      frequency: const Duration(minutes: 60),
-      inputData: {
-        'boredomValue': boredomValue,
-        'userID': user.uid,
-      },
-    );
-  }
 
   final themeStr =
       await rootBundle.loadString('assets/themes/base_theme_3.json');

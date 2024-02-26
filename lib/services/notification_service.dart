@@ -30,15 +30,24 @@ class NotificationManager {
     await FirebaseFirestore.instance
         .collection('tokens')
         .doc(uid)
-        .set({'token': token});
+        .get()
+        .then((DocumentSnapshot documentSnapshot) async {
+      if (!documentSnapshot.exists) {
+        await FirebaseFirestore.instance
+            .collection('tokens')
+            .doc(uid)
+            .set({'token': token});
+      }
+    });
   }
 
-  Future<void> sendNotification(String toToken) async {
-    final body = {
+  Future<void> sendNotification(
+      String toToken, String title, String body) async {
+    final notification = {
       "to": toToken,
       "notification": {
-        "title": "Test",
-        "body": "Didya get it modafaqa?",
+        "title": title,
+        "body": body,
       }
     };
 
@@ -49,7 +58,7 @@ class NotificationManager {
         HttpHeaders.authorizationHeader:
             'key=AAAA_9Wncq0:APA91bGA_o9qDaU8GRCtWrHx5QDV8hHPt9zTMKPZ-ZAQ20X1EkN-ddnYewUdHhzcgHCvAH1Ano5mrTZTB80PvSTaihJR_oONzJbmO1Gq4Eyeoro90yTfFHV2x_wJ1cvOSbmLQPs36yFV'
       },
-      body: jsonEncode(body),
+      body: jsonEncode(notification),
     );
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');

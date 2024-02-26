@@ -1,16 +1,14 @@
 import 'package:boredomapp/models/user.dart';
 import 'package:boredomapp/providers/userprovider.dart';
-import 'package:boredomapp/services/manage_connection.dart';
 import 'package:boredomapp/widgets/connection_add.dart';
 import 'package:boredomapp/widgets/connection_display.dart';
 import 'package:boredomapp/widgets/connection_incoming.dart';
 import 'package:boredomapp/widgets/connection_withdraw.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ConnectionsScreen extends ConsumerWidget {
-  ConnectionsScreen();
+  const ConnectionsScreen({super.key});
 
   // @override
   // void initState() {
@@ -39,7 +37,7 @@ class ConnectionsScreen extends ConsumerWidget {
           title: const Text('Connection'),
           actions: [
             Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: CircleAvatar(
                 backgroundColor: connectionColor,
                 radius: 5,
@@ -48,7 +46,7 @@ class ConnectionsScreen extends ConsumerWidget {
           ],
         ),
         body: Center(
-          child: buildConnectionWidget(data!, ref),
+          child: buildConnectionWidget(data, ref),
         ),
       );
     }, error: (Object error, StackTrace stackTrace) {
