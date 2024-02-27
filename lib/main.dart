@@ -30,18 +30,29 @@ Future<void> storeDataInDatabase(uid, boredomValue) async {
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    debugPrint("Checkpoint 1");
+    late double cloudBoredomValue = 0;
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      cloudBoredomValue = await FirebaseFirestore.instance
+          .collection('users')
+          .doc()
+          .get()
+          .then((DocumentSnapshot documentSnapshot) {
+        if (documentSnapshot.exists) {
+          return documentSnapshot['boredomValue'];
+        }
+        return 0.0;
+      });
+    }
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    double boredomValue = prefs.getDouble('boredomValue') ?? 0;
+    double boredomValue = prefs.getDouble('boredomValue') ?? cloudBoredomValue;
     await Firebase.initializeApp();
 
     switch (task) {
       case "storeValues":
         if (inputData != null) {
           final userID = inputData['userID'];
-          debugPrint("Checkpoint 2");
           await storeDataInDatabase(userID, boredomValue);
-          debugPrint("Checkpoint 4");
           await FirebaseFirestore.instance
               .collection('users')
               .doc(userID)

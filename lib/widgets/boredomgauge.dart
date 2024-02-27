@@ -1,4 +1,3 @@
-
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
@@ -139,7 +138,7 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                               MarkerPointer(
                                 overlayRadius: 1,
                                 enableDragging: false,
-                                value: snapshot.data?.boredomValue ?? 50,
+                                value: snapshot.data!.boredomValue,
                                 color: const Color.fromARGB(255, 110, 110,
                                     110), // Color of the marker pointer
                                 markerOffset:
@@ -156,7 +155,7 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                                 overlayRadius: 1,
 
                                 enableDragging: true,
-                                value: widget.value ?? 50,
+                                value: widget.value!,
                                 onValueChanged: (double newValue) {
                                   if (widget.onValueChanged != null) {
                                     widget.onValueChanged!(newValue);
@@ -200,7 +199,7 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                                 overlayRadius: 1,
 
                                 enableDragging: true,
-                                value: widget.value ?? 50,
+                                value: widget.value!,
                                 onValueChanged: (double? newValue) {
                                   if (widget.onValueChanged != null) {
                                     widget.onValueChanged!(newValue);

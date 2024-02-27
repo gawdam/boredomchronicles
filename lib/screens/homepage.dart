@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:boredomapp/models/user.dart';
+import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/screens/sidedrawer.dart';
 import 'package:boredomapp/services/notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -54,9 +56,9 @@ class _HomePage extends State<HomePage> {
       },
     );
 
-    _timer = Timer(const Duration(seconds: 5), () {
-      setBoredomValue(_boredomValue);
-    });
+    // _timer = Timer(const Duration(seconds: 5), () {
+    //   setBoredomValue(_boredomValue);
+    // });
   }
 
   @override
@@ -95,8 +97,26 @@ class _HomePage extends State<HomePage> {
       }
       return false;
     });
+    bool timeCriteria = await FirebaseFirestore.instance
+        .collection('tokens')
+        .doc(recieverUID)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) async {
+      if (documentSnapshot.exists) {
+        if (!((documentSnapshot.data() as Map<String, dynamic>)
+            .containsKey('timestamp'))) {
+          return true;
+        } else if (DateTime.now()
+                .difference(documentSnapshot['timestamp'].toDate())
+                .inHours >
+            1) {
+          return true;
+        }
+      }
+      return false;
+    });
 
-    return senderCanSend && recieverCanRecieve;
+    return senderCanSend && recieverCanRecieve && timeCriteria;
   }
 
   Future<void> _sendNotification(connectionUID) async {
@@ -108,36 +128,15 @@ class _HomePage extends State<HomePage> {
           .get()
           .then((DocumentSnapshot documentSnapshot) async {
         if (documentSnapshot.exists) {
-          if (!(documentSnapshot.data() as Map<String, dynamic>)
-              .containsKey('timestamp')) {
-            await notificationManager.sendNotification(
-                documentSnapshot['token'],
-                documentSnapshot['notificationTitle'],
-                documentSnapshot['notificationBody']);
-            await FirebaseFirestore.instance
-                .collection('tokens')
-                .doc(connectionUID)
-                .update({'timestamp': Timestamp.now()});
-          } else if (DateTime.now()
-                  .difference(documentSnapshot['timestamp'].toDate())
-                  .inHours >
-              1) {
-            await notificationManager.sendNotification(
-                documentSnapshot['token'],
-                documentSnapshot['title'],
-                documentSnapshot['title']);
-            await FirebaseFirestore.instance
-                .collection('tokens')
-                .doc(connectionUID)
-                .update({'timestamp': Timestamp.now()});
-          }
-        } else {
-          return '';
+          await notificationManager.sendNotification(
+              documentSnapshot['token'],
+              documentSnapshot['notificationTitle'],
+              documentSnapshot['notificationBody']);
+          await FirebaseFirestore.instance
+              .collection('tokens')
+              .doc(connectionUID)
+              .update({'timestamp': Timestamp.now()});
         }
-      }).catchError((error) {
-        // Handle error
-        print('Error getting token request: $error');
-        return ''; // or handle accordingly based on your requirement
       });
     }
   }
@@ -153,34 +152,14 @@ class _HomePage extends State<HomePage> {
     }
     await FirebaseFirestore.instance.collection('users').doc(user!.uid).update(
         {'boredomValue': boredomValue, 'updateTimestamp': Timestamp.now()});
-    if ((boredomValue ?? 50) >= 100.0) {
-      print('peaked');
-      String connectionUID = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user!.uid)
-          .get()
-          .then((DocumentSnapshot documentSnapshot) {
-        if (documentSnapshot.exists) {
-          return documentSnapshot['connectionID'] ?? '';
-        } else {
-          return '';
-        }
-      });
-      String? connectedtoUID = await FirebaseFirestore.instance
-          .collection('connection-request')
-          .doc(connectionUID)
-          .get()
-          .then((DocumentSnapshot documentSnapshot) {
-        if (documentSnapshot.exists) {
-          return documentSnapshot['sentToUID'];
-        }
-        return null;
-      });
+    if ((boredomValue ?? 50) >= 99.0) {
+      UserData userData = await getUserData(user!.uid);
+      UserData? connectionData = await getConnection(userData);
 
-      if (connectedtoUID != null) {
-        await _sendNotification(connectedtoUID);
+      if (connectionData != null) {
+        await _sendNotification(connectionData.uid);
       }
-      await setBoredomValue(99.9);
+      await setBoredomValue(98.9);
     }
   }
 
@@ -189,7 +168,7 @@ class _HomePage extends State<HomePage> {
     if (prefs.containsKey('boredomValue')) {
       setState(() {
         // Load boredom value from shared preferences
-        _boredomValue = prefs.getDouble('boredomValue') ?? 50;
+        _boredomValue = prefs.getDouble('boredomValue')!;
         print(_boredomValue);
       });
     }

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:boredomapp/models/user.dart';
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -45,11 +48,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       });
       setState(() {
         if (snapshot != null) {
+          print('snapshot not null');
           _incomingNotificationsEnabled = snapshot['incoming'];
           _outgoingNotificationsEnabled = snapshot['outgoing'];
           _titleController.text = snapshot['notificationTitle'];
           _bodyController.text = snapshot['notificationBody'];
           _connectionUID = connectionData.uid;
+        } else {
+          print("null snapshot");
         }
       });
     }
@@ -199,6 +205,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         onPressed: () async {
                           _isSaving = true;
                           await _saveNotificationSettings();
+                          // await Future.delayed(Duration(seconds: 1));
                           _isSaving = false;
                         },
                         child: const Text('Save'),
@@ -230,6 +237,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     String body = _bodyController.text;
     // print(connectionUID);
 
+    print(_connectionUID);
+
     await FirebaseFirestore.instance
         .collection('tokens')
         .doc(_connectionUID)
@@ -237,8 +246,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       'incoming': _incomingNotificationsEnabled,
       'outgoing': _outgoingNotificationsEnabled,
       'notificationTitle': title,
-      'notificationbody': body,
+      'notificationBody': body,
     });
+    await getNotificationData();
     // You can add logic here to save these settings to your preferred storage mechanism
   }
 
