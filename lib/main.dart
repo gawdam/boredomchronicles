@@ -21,7 +21,6 @@ final DatabaseService db = DatabaseService();
 
 Future<void> storeDataInDatabase(uid, boredomValue) async {
   final now = DateTime.now();
-  debugPrint("Checkpoint 3");
   final data = UserHistory(uid: uid, timestamp: now, value: boredomValue);
   await db.insertBoredomData(data);
 }
@@ -31,6 +30,7 @@ Future<void> storeDataInDatabase(uid, boredomValue) async {
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     late double cloudBoredomValue = 0;
+    await Firebase.initializeApp();
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       cloudBoredomValue = await FirebaseFirestore.instance
@@ -46,7 +46,7 @@ void callbackDispatcher() {
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     double boredomValue = prefs.getDouble('boredomValue') ?? cloudBoredomValue;
-    await Firebase.initializeApp();
+    print(boredomValue);
 
     switch (task) {
       case "storeValues":
