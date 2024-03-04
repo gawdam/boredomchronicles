@@ -5,6 +5,7 @@ import 'package:boredomapp/screens/auth.dart';
 import 'package:boredomapp/screens/homepage.dart';
 import 'package:boredomapp/screens/splash.dart';
 import 'package:boredomapp/services/database_service.dart';
+import 'package:boredomapp/widgets/homewidget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -45,6 +46,7 @@ void callbackDispatcher() {
       });
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     double boredomValue = prefs.getDouble('boredomValue') ?? cloudBoredomValue;
     print(boredomValue);
 
@@ -105,26 +107,34 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.theme});
   final ThemeData theme;
 
+  Widget App() {
+    return StreamBuilder(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SplashScreen();
+        }
+
+        if (snapshot.hasData) {
+          return const HomePage();
+        }
+        return const AuthScreen();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: 'app',
+      routes: {
+        'app': (context) => App(),
+        'homeWidget': (context) => HomeWidget(),
+      },
       title: 'Boredom Meter',
       theme: theme.copyWith(
           textTheme: theme.textTheme.apply(fontFamily: 'PixelifySans')),
       themeMode: ThemeMode.dark,
-      home: StreamBuilder(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SplashScreen();
-          }
-
-          if (snapshot.hasData) {
-            return const HomePage();
-          }
-          return const AuthScreen();
-        },
-      ),
     );
   }
 }

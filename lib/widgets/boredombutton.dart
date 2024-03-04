@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class BoredomButton extends StatefulWidget {
   final Function(double) onPressed;
@@ -32,6 +33,8 @@ class _BoredomButtonState extends State<BoredomButton> {
         setState(() {
           isPressed = true;
         });
+        HapticFeedback.lightImpact();
+
         widget.onPressed(widget.boredomValue + 2);
       },
       onTapUp: (details) {
@@ -46,6 +49,7 @@ class _BoredomButtonState extends State<BoredomButton> {
             widget.onPressed(widget.boredomValue + 0.2);
           });
         });
+        HapticFeedback.heavyImpact();
       },
       onLongPressUp: () {
         setState(() {
