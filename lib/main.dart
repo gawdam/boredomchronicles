@@ -5,13 +5,13 @@ import 'package:boredomapp/screens/auth.dart';
 import 'package:boredomapp/screens/homepage.dart';
 import 'package:boredomapp/screens/splash.dart';
 import 'package:boredomapp/services/database_service.dart';
-import 'package:boredomapp/widgets/homewidget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:json_theme/json_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
@@ -66,6 +66,9 @@ void callbackDispatcher() {
       case "boredomTicker":
         boredomValue = (boredomValue - 6.25).clamp(0.0, 99.9);
         prefs.setDouble('boredomValue', boredomValue);
+        HomeWidget.updateWidget(
+          androidName: 'BoredomWidget',
+        );
     }
     //simpleTask will be emitted here.
     return Future.value(true);
@@ -75,6 +78,7 @@ void callbackDispatcher() {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Workmanager().cancelAll();
+  HomeWidget.widgetClicked.listen((event) {});
 
   Workmanager().initialize(
       callbackDispatcher, // The top level function, aka callbackDispatcher
@@ -129,7 +133,6 @@ class MyApp extends StatelessWidget {
       initialRoute: 'app',
       routes: {
         'app': (context) => App(),
-        'homeWidget': (context) => HomeWidget(),
       },
       title: 'Boredom Meter',
       theme: theme.copyWith(

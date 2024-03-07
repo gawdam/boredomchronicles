@@ -19,8 +19,8 @@ class BoredomGauge extends ConsumerStatefulWidget {
 class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
   final connectionAvatar = 'assets/images/man.png';
 
-  @override
-  Widget build(BuildContext context) {
+  Widget createGauge(
+      userBoredom, connectionBoredom, userAvatar, _connectionAvatar) {
     var gaugeRange = <GaugeRange>[
       GaugeRange(
         startValue: 0,
@@ -100,6 +100,65 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
       ),
     ];
 
+    return SfRadialGauge(
+      backgroundColor: Colors.transparent,
+      axes: <RadialAxis>[
+        RadialAxis(
+            showLabels: false,
+            showTicks: false,
+            minimum: 0,
+            maximum: 100,
+            startAngle: 180,
+            endAngle: 360,
+            axisLineStyle: const AxisLineStyle(color: Colors.transparent),
+            radiusFactor: 0.8, // Set radius factor for a semicircle
+            ranges: gaugeRange,
+            annotations: gaugeAnnotation,
+            pointers: <GaugePointer>[
+              if (connectionBoredom != null)
+                MarkerPointer(
+                  overlayRadius: 1,
+                  enableDragging: false,
+                  value: connectionBoredom,
+                  color: const Color.fromARGB(
+                      255, 110, 110, 110), // Color of the marker pointer
+                  markerOffset: 3, // Offset to position the marker pointer
+                  markerType: MarkerType.image,
+                  imageUrl: 'assets/images/greyscale/${_connectionAvatar}',
+                  markerWidth: 60,
+                  markerHeight: 60,
+                  enableAnimation: true,
+                  animationDuration: 500,
+                ),
+              MarkerPointer(
+                overlayRadius: 1,
+
+                enableDragging: true,
+                value: widget.value!,
+                onValueChanged: (double newValue) {
+                  if (widget.onValueChanged != null) {
+                    widget.onValueChanged!(newValue);
+                  }
+                },
+
+                color: const Color.fromARGB(
+                    255, 255, 0, 0), // Color of the marker pointer
+                markerOffset: 3, // Offset to position the marker pointer
+                markerType: MarkerType.image,
+                imageUrl: 'assets/images/${userAvatar}',
+
+                markerWidth: 60,
+                markerHeight: 60,
+                enableAnimation: true,
+                animationDuration: 500,
+              ),
+            ]),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
     return user.when(data: (data) {
       if (data == null) {
@@ -118,109 +177,13 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                     return const Column();
                   }
                   if (snapshot.hasData && snapshot.data != null) {
-                    return SfRadialGauge(
-                      backgroundColor: Colors.transparent,
-                      axes: <RadialAxis>[
-                        RadialAxis(
-                            showLabels: false,
-                            showTicks: false,
-                            minimum: 0,
-                            maximum: 100,
-                            startAngle: 180,
-                            endAngle: 360,
-                            axisLineStyle:
-                                const AxisLineStyle(color: Colors.transparent),
-                            radiusFactor:
-                                0.8, // Set radius factor for a semicircle
-                            ranges: gaugeRange,
-                            annotations: gaugeAnnotation,
-                            pointers: <GaugePointer>[
-                              MarkerPointer(
-                                overlayRadius: 1,
-                                enableDragging: false,
-                                value: snapshot.data!.boredomValue,
-                                color: const Color.fromARGB(255, 110, 110,
-                                    110), // Color of the marker pointer
-                                markerOffset:
-                                    3, // Offset to position the marker pointer
-                                markerType: MarkerType.image,
-                                imageUrl:
-                                    'assets/images/greyscale/${snapshot.data?.avatar}',
-                                markerWidth: 60,
-                                markerHeight: 60,
-                                enableAnimation: true,
-                                animationDuration: 500,
-                              ),
-                              MarkerPointer(
-                                overlayRadius: 1,
-
-                                enableDragging: true,
-                                value: widget.value!,
-                                onValueChanged: (double newValue) {
-                                  if (widget.onValueChanged != null) {
-                                    widget.onValueChanged!(newValue);
-                                  }
-                                },
-
-                                color: const Color.fromARGB(255, 255, 0,
-                                    0), // Color of the marker pointer
-                                markerOffset:
-                                    3, // Offset to position the marker pointer
-                                markerType: MarkerType.image,
-                                imageUrl: 'assets/images/${data.avatar}',
-
-                                markerWidth: 60,
-                                markerHeight: 60,
-                                enableAnimation: true,
-                                animationDuration: 500,
-                              ),
-                            ]),
-                      ],
-                    );
+                    return createGauge(
+                        widget.value,
+                        snapshot.data!.boredomValue,
+                        data.avatar,
+                        snapshot.data!.avatar);
                   } else {
-                    return SfRadialGauge(
-                      backgroundColor: Colors.transparent,
-                      axes: <RadialAxis>[
-                        RadialAxis(
-                            showLabels: false,
-                            showTicks: false,
-                            minimum: 0,
-                            maximum: 100,
-                            startAngle: 180,
-                            endAngle: 360,
-                            axisLineStyle:
-                                const AxisLineStyle(color: Colors.transparent),
-                            radiusFactor:
-                                0.8, // Set radius factor for a semicircle
-                            ranges: gaugeRange,
-                            annotations: gaugeAnnotation,
-                            pointers: <GaugePointer>[
-                              MarkerPointer(
-                                overlayRadius: 1,
-
-                                enableDragging: true,
-                                value: widget.value!,
-                                onValueChanged: (double? newValue) {
-                                  if (widget.onValueChanged != null) {
-                                    widget.onValueChanged!(newValue);
-                                  }
-                                },
-
-                                color: const Color.fromARGB(255, 110, 110,
-                                    110), // Color of the marker pointer
-                                markerOffset:
-                                    3, // Offset to position the marker pointer
-                                markerType: MarkerType.image,
-                                imageUrl: 'assets/images/${data.avatar}',
-
-                                markerWidth: 60,
-                                markerHeight: 60,
-                                enableAnimation: true,
-                                animationDuration: 500,
-                              ),
-                            ]),
-                      ],
-                    );
+                    return createGauge(widget.value, null, data.avatar, null);
                   }
                 }),
           ),

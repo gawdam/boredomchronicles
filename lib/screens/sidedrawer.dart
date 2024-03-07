@@ -216,7 +216,8 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ConnectionsScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const ConnectionsScreen()),
               );
             },
           ),

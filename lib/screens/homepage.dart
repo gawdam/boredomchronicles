@@ -4,6 +4,7 @@ import 'package:boredomapp/models/user.dart';
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/screens/sidedrawer.dart';
 import 'package:boredomapp/services/notification_service.dart';
+import 'package:boredomapp/widgets/homewidget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,9 @@ import 'package:workmanager/workmanager.dart';
 
 import '../widgets/boredombutton.dart';
 import '../widgets/boredomgauge.dart';
+import 'package:home_widget/home_widget.dart';
+
+final _globalKey = GlobalKey();
 
 String getBoredomIcon(double boredomValue) {
   String borednessIcon = '😐';
@@ -152,15 +156,52 @@ class _HomePage extends State<HomePage> {
     }
     await FirebaseFirestore.instance.collection('users').doc(user!.uid).update(
         {'boredomValue': boredomValue, 'updateTimestamp': Timestamp.now()});
-    if ((boredomValue ?? 50) >= 99.0) {
-      UserData userData = await getUserData(user!.uid);
-      UserData? connectionData = await getConnection(userData);
+    UserData userData = await getUserData(user!.uid);
+    UserData? connectionData = await getConnection(userData);
 
-      if (connectionData != null) {
+    if (connectionData != null) {
+      var path = await HomeWidget.renderFlutterWidget(
+        // BoredomButton(boredomValue: boredomValue, onPressed: (v){}),
+        HomePageWidget(
+          context: context,
+          key: _globalKey,
+          userBoredom: userData.boredomValue,
+          userAvatar: userData.avatar,
+          connectionBoredom: connectionData.boredomValue,
+          connectionAvatar: connectionData.avatar,
+        ),
+        key: 'filename',
+        logicalSize: const Size(300, 210),
+        pixelRatio: MediaQuery.of(context).devicePixelRatio,
+      );
+      print(path);
+
+      if ((boredomValue ?? 50) >= 99.0) {
         await _sendNotification(connectionData.uid);
+        await setBoredomValue(98.9);
       }
-      await setBoredomValue(98.9);
+    } else {
+      var path = await HomeWidget.renderFlutterWidget(
+        // BoredomButton(boredomValue: boredomValue, onPressed: (v){}),
+        HomePageWidget(
+          context: context,
+          key: _globalKey,
+          userBoredom: userData.boredomValue,
+          userAvatar: userData.avatar,
+          connectionBoredom: null,
+          connectionAvatar: null,
+        ),
+
+        key: 'filename',
+        logicalSize: const Size(300, 210),
+        pixelRatio: 3,
+      );
     }
+    HomeWidget.updateWidget(
+      androidName: 'BoredomWidget',
+    );
+
+    // BoredomButton(boredomValue: boredomValue, onPressed: (v){}),
   }
 
   Future<void> _loadBoredomValue() async {
