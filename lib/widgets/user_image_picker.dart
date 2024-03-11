@@ -108,7 +108,8 @@ class _UserImagePickerState extends State<UserImagePicker> {
               child: _stockImage
                   ? CircleAvatar(
                       radius: 55,
-                      backgroundImage: const AssetImage('assets/images/sloth.png'),
+                      backgroundImage:
+                          const AssetImage('assets/images/sloth.png'),
                       backgroundColor: Theme.of(context).canvasColor,
                     )
                   : CircleAvatar(

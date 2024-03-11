@@ -13,10 +13,15 @@ final DatabaseService databaseService = DatabaseService();
 
 // ignore: must_be_immutable
 class UserProfileScreen extends StatelessWidget {
-  UserProfileScreen({Key? key, required this.user, required this.imagePath})
-      : super(key: key);
+  UserProfileScreen({
+    Key? key,
+    required this.user,
+    required this.imagePath,
+    required this.onProfileImageChanged,
+  }) : super(key: key);
   final UserData user;
   String? imagePath;
+  final Function onProfileImageChanged;
 
   Future<void> saveImageLocally(File image) async {
     final appDir = await getApplicationDocumentsDirectory();
@@ -25,7 +30,8 @@ class UserProfileScreen extends StatelessWidget {
 
     // Save the image path in SharedPreferences
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('user_image_path', imagePath);
+    await prefs.setString('user_image_path', imagePath);
+    print("path saved - $imagePath");
   }
 
   Future<String?> uploadImageToCloud(File image, String userId) async {
@@ -41,13 +47,12 @@ class UserProfileScreen extends StatelessWidget {
       String fileName = '$userId.png';
 
       UploadTask uploadTask = storageReference.child(fileName).putFile(image);
-
-      TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() {});
-      String downloadURL = await taskSnapshot.ref.getDownloadURL();
+      String downloadURL = await uploadTask
+          .then((taskSnapshot) => taskSnapshot.ref.getDownloadURL());
 
       user.imagePath = downloadURL;
       await saveUserDataToCloud(user);
-      print(user.imagePath);
+
       return downloadURL;
     } catch (e) {
       print('Error uploading image to Firebase Storage: $e');
@@ -82,7 +87,7 @@ class UserProfileScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context, imagePath);
+            Navigator.pop(context);
           },
         ),
       ),
@@ -98,8 +103,9 @@ class UserProfileScreen extends StatelessWidget {
                   imagePath: imagePath,
                   onImageSelected: (File? selectedImage) async {
                     if (selectedImage != null) {
-                      uploadImageToCloud(selectedImage, user.uid);
                       await saveImageLocally(selectedImage);
+                      uploadImageToCloud(selectedImage, user.uid);
+                      await onProfileImageChanged(selectedImage.path);
                     }
                   },
                 ),
@@ -117,7 +123,8 @@ class UserProfileScreen extends StatelessWidget {
                     text: user.connectedToUsername == null
                         ? 'No connection'
                         : 'Connected to: ',
-                    style: const TextStyle(fontFamily: 'PixelifySans', fontSize: 15),
+                    style: const TextStyle(
+                        fontFamily: 'PixelifySans', fontSize: 15),
                     children: <TextSpan>[
                       TextSpan(
                         text: user.connectedToUsername,

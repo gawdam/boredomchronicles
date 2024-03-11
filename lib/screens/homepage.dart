@@ -71,7 +71,7 @@ class _HomePage extends State<HomePage> {
     if (_timer != null) {
       _timer!.cancel();
     }
-    clearPreferences();
+    // clearPreferences();
     super.dispose();
   }
 
@@ -239,17 +239,18 @@ class _HomePage extends State<HomePage> {
     return Scaffold(
       drawer: const SideDrawer(),
       appBar: AppBar(
-        title: const Text('Boredom Meter'),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await clearPreferences();
-              FirebaseAuth.instance.signOut();
-            },
-            icon: const Icon(Icons.exit_to_app),
-            color: Theme.of(context).colorScheme.primary,
-          )
-        ],
+        // centerTitle: true,
+        title: const Text('Boredom Chronicles'),
+        // actions: [
+        //   IconButton(
+        //     onPressed: () async {
+        //       await clearPreferences();
+        //       FirebaseAuth.instance.signOut();
+        //     },
+        //     icon: const Icon(Icons.exit_to_app),
+        //     color: Theme.of(context).colorScheme.primary,
+        //   )
+        // ],
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,

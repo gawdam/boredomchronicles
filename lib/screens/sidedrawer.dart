@@ -36,20 +36,23 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
   @override
   void initState() {
     super.initState();
+
     _fetchUserData().whenComplete(() => ref.invalidate(userProvider));
   }
 
   Future<void> _fetchUserData() async {
+    // ref.invalidate(userProvider);
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       imagePath = prefs.getString('user_image_path');
     });
+    print("data taken from- $imagePath");
   }
 
   Widget getUserData() {
     // ref.invalidate(userProvider);
     final user = ref.watch(userProvider);
-    _fetchUserData();
+    // _fetchUserData();
 
     return user.when(
       error: (error, _) => Text('Please login again. $error'),
@@ -71,6 +74,12 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
                 builder: (context) => UserProfileScreen(
                   user: userData,
                   imagePath: imagePath,
+                  onProfileImageChanged: (newImagePath) async {
+                    setState(() {
+                      imagePath = newImagePath;
+                    });
+                    // await _fetchUserData();
+                  },
                 ),
               ),
             );
@@ -183,6 +192,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    // _fetchUserData();
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
