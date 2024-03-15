@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:1098801181357:android:4c2b4d2b2e22a37fc74c24",
         "android_client_info": {
-          "package_name": "com.example.boredomapp"
+          "package_name": "com.gowdham.boredomapp"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "1098801181357-lvqr4oeh592vtcrdscpq13qgoerddcav.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.boredomapp",
+            "package_name": "com.gowdham.boredomapp",
             "certificate_hash": "36aaf820e023c889db2ef588239ebd430c887107"
           }
         },
@@ -42,7 +42,7 @@
               "client_id": "1098801181357-5mlrb5ffbma2f78imlnplci5bfndd8en.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.boredomapp"
+                "bundle_id": "com.gowdham.boredomapp"
               }
             }
           ]

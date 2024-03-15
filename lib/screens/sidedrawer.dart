@@ -43,8 +43,9 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
   Future<void> _fetchUserData() async {
     // ref.invalidate(userProvider);
     final prefs = await SharedPreferences.getInstance();
+    prefs.reload();
     setState(() {
-      imagePath = prefs.getString('user_image_path');
+      imagePath = prefs.getString('profile_pic_path');
     });
     print("data taken from- $imagePath");
   }
@@ -52,7 +53,7 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
   Widget getUserData() {
     // ref.invalidate(userProvider);
     final user = ref.watch(userProvider);
-    // _fetchUserData();
+    _fetchUserData();
 
     return user.when(
       error: (error, _) => Text('Please login again. $error'),

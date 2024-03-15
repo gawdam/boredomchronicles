@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:boredomapp/models/user.dart';
 import 'package:boredomapp/providers/userprovider.dart';
 import 'package:boredomapp/screens/homepage.dart';
@@ -25,12 +26,16 @@ class UserProfileScreen extends StatelessWidget {
 
   Future<void> saveImageLocally(File image) async {
     final appDir = await getApplicationDocumentsDirectory();
-    final savedImage = await image.copy('${appDir.path}/profile_pic.png');
+    File file = await File(appDir.path + '/profile_pic.jpg');
+    await FileImage(file).evict();
+    final savedImage = await image.copy('${appDir.path}/profile_pic.jpg');
     final imagePath = savedImage.path;
 
     // Save the image path in SharedPreferences
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_image_path', imagePath);
+    prefs.reload();
+    await prefs.setString('profile_pic_path', imagePath);
+    prefs.reload();
     print("path saved - $imagePath");
   }
 
@@ -105,7 +110,7 @@ class UserProfileScreen extends StatelessWidget {
                     if (selectedImage != null) {
                       await saveImageLocally(selectedImage);
                       uploadImageToCloud(selectedImage, user.uid);
-                      await onProfileImageChanged(selectedImage.path);
+                      onProfileImageChanged(selectedImage.path);
                     }
                   },
                 ),

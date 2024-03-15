@@ -1,4 +1,4 @@
-package com.example.boredomapp
+package com.gowdham.boredomapp
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager

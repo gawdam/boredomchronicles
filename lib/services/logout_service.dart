@@ -26,6 +26,8 @@ class LogoutService {
       await clearPreferences();
 
       await _firestore.collection('users').doc(data.uid).delete();
+      await _firestore.collection('users').doc(data.uid).delete();
+      await _firestore.collection('users').doc(data.uid).delete();
 
       // 1. Delete user account
       await _auth.currentUser?.delete();
