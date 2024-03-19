@@ -9,8 +9,23 @@ class SplashScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Boredom meter'),
       ),
-      body: const Center(
-        child: Text("Loading..."),
+      body: Center(
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(
+                top: 30,
+                bottom: 20,
+              ),
+              width: 100,
+              child: Image.asset('assets/images/sloth.gif'),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Text("Loading...")
+          ],
+        ),
       ),
     );
   }

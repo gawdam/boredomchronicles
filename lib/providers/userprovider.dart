@@ -14,9 +14,12 @@ final userProvider = StreamProvider<UserData?>((ref) {
   });
 });
 
-Future<UserData> getUserData(String userId) async {
+Future<UserData?> getUserData(String userId) async {
   final user =
       await FirebaseFirestore.instance.collection('users').doc(userId).get();
+  if (user.data() == null) {
+    return null;
+  }
   return UserData(
       uid: userId,
       username: user.data()!['username'],
@@ -48,7 +51,10 @@ Future<void> saveUserDataToCloud(UserData user) async {
   }
 }
 
-Future<UserData?> getConnection(UserData userData) async {
+Future<UserData?> getConnection(UserData? userData) async {
+  if (userData == null) {
+    return null;
+  }
   if (userData.connectedToUsername != null) {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('users')

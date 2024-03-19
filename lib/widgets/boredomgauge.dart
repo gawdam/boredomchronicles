@@ -4,8 +4,8 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BoredomGauge extends ConsumerStatefulWidget {
-  final double? value; // Value to be represented on the gauge
-  final ValueChanged<double?>? onValueChanged;
+  final value; // Value to be represented on the gauge
+  final onValueChanged;
   const BoredomGauge({
     super.key,
     required this.value,
@@ -18,6 +18,12 @@ class BoredomGauge extends ConsumerStatefulWidget {
 
 class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
   final connectionAvatar = 'assets/images/man.png';
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    ref.invalidate(userProvider);
+  }
 
   Widget createGauge(
       userBoredom, connectionBoredom, userAvatar, _connectionAvatar) {
@@ -134,7 +140,7 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
                 overlayRadius: 1,
 
                 enableDragging: true,
-                value: widget.value!,
+                value: widget.value ?? 1,
                 onValueChanged: (double newValue) {
                   if (widget.onValueChanged != null) {
                     widget.onValueChanged!(newValue);
@@ -162,6 +168,8 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
     final user = ref.watch(userProvider);
     return user.when(data: (data) {
       if (data == null) {
+        ref.invalidate(userProvider);
+        print("NULL DATA");
         return const CircularProgressIndicator();
       }
       return ClipRect(
@@ -190,7 +198,7 @@ class _BoredomGaugeState extends ConsumerState<BoredomGauge> {
         ),
       );
     }, error: (Object error, StackTrace stackTrace) {
-      return ErrorWidget(error);
+      return Expanded(child: ErrorWidget(error));
     }, loading: () {
       return const CircularProgressIndicator();
     });

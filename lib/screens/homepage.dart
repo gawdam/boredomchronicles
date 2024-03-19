@@ -40,7 +40,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePage extends State<HomePage> {
-  final user = FirebaseAuth.instance.currentUser;
+  var user = FirebaseAuth.instance.currentUser;
   late double _boredomValue = 50;
   Timer? _timer;
   final notificationManager = NotificationManager();
@@ -48,6 +48,7 @@ class _HomePage extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    user = FirebaseAuth.instance.currentUser;
 
     _loadBoredomValue();
     _storeNotificationToken();
@@ -156,7 +157,7 @@ class _HomePage extends State<HomePage> {
     }
     await FirebaseFirestore.instance.collection('users').doc(user!.uid).update(
         {'boredomValue': boredomValue, 'updateTimestamp': Timestamp.now()});
-    UserData userData = await getUserData(user!.uid);
+    UserData? userData = await getUserData(user!.uid);
     UserData? connectionData = await getConnection(userData);
 
     if (connectionData != null) {
@@ -165,8 +166,8 @@ class _HomePage extends State<HomePage> {
         HomePageWidget(
           context: context,
           key: _globalKey,
-          userBoredom: userData.boredomValue,
-          userAvatar: userData.avatar,
+          userBoredom: userData!.boredomValue,
+          userAvatar: userData!.avatar,
           connectionBoredom: connectionData.boredomValue,
           connectionAvatar: connectionData.avatar,
         ),
@@ -186,7 +187,7 @@ class _HomePage extends State<HomePage> {
         HomePageWidget(
           context: context,
           key: _globalKey,
-          userBoredom: userData.boredomValue,
+          userBoredom: userData!.boredomValue,
           userAvatar: userData.avatar,
           connectionBoredom: null,
           connectionAvatar: null,

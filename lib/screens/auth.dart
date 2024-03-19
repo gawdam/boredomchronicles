@@ -30,7 +30,7 @@ class _AuthScreen extends State<AuthScreen> {
     super.dispose();
   }
 
-  void _submit() async {
+  Future<void> _submit() async {
     if (_form.currentState?.validate() ?? false) {
       try {
         setState(() {
@@ -40,7 +40,7 @@ class _AuthScreen extends State<AuthScreen> {
           email: "${_usernameController.text}@boredomapp.com",
           password: '12345678',
         );
-        final ref = FirebaseStorage.instance
+        final ref = await FirebaseStorage.instance
             .ref()
             .child('user_images')
             .child('sloth.png');
@@ -226,8 +226,8 @@ class _AuthScreen extends State<AuthScreen> {
                   const SizedBox(height: 16.0),
                   if (!_isLoggingIn)
                     ElevatedButton.icon(
-                      onPressed: () {
-                        _submit();
+                      onPressed: () async {
+                        await _submit();
                       },
                       icon: const Icon(Icons.arrow_forward),
                       label: const Text('Begin your journey'),

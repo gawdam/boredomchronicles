@@ -91,21 +91,27 @@ class _SideDrawerState extends ConsumerState<SideDrawer> {
               Hero(
                 tag: 'userImage',
                 child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Theme.of(context).canvasColor,
-                  child: imagePath == null
-                      ? const CircleAvatar(
-                          radius: 35,
-                          backgroundImage:
-                              AssetImage('assets/images/sloth.png'),
-                          backgroundColor: Colors.transparent,
-                        )
-                      : CircleAvatar(
-                          radius: 35,
-                          backgroundImage: FileImage(File(imagePath!)),
-                          backgroundColor: Colors.transparent,
-                        ),
-                ),
+                    radius: 40,
+                    backgroundColor: Theme.of(context).canvasColor,
+                    child: imagePath == null
+                        ? const CircleAvatar(
+                            radius: 35,
+                            backgroundImage:
+                                AssetImage('assets/images/sloth.png'),
+                            backgroundColor: Colors.transparent,
+                          )
+                        : File(imagePath!).existsSync()
+                            ? CircleAvatar(
+                                radius: 35,
+                                backgroundImage: FileImage(File(imagePath!)),
+                                backgroundColor: Colors.transparent,
+                              )
+                            : const CircleAvatar(
+                                radius: 35,
+                                backgroundImage:
+                                    AssetImage('assets/images/sloth.png'),
+                                backgroundColor: Colors.transparent,
+                              )),
               ),
               const SizedBox(height: 20),
               Text(

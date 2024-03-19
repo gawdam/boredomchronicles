@@ -81,10 +81,10 @@ void main() async {
   HomeWidget.widgetClicked.listen((event) {});
 
   Workmanager().initialize(
-      callbackDispatcher, // The top level function, aka callbackDispatcher
-      isInDebugMode:
-          true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
-      );
+    callbackDispatcher, // The top level function, aka callbackDispatcher
+    // isInDebugMode:
+    //     true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
+  );
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -120,7 +120,19 @@ class MyApp extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          return const HomePage();
+          if (snapshot.data != null) {
+            return FutureBuilder(
+              future: Future.delayed(Duration(seconds: 1)),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return SplashScreen();
+                }
+                return HomePage();
+              },
+            );
+          }
+          ;
+          return SplashScreen();
         }
         return const AuthScreen();
       },
